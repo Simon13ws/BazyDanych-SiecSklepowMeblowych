@@ -1,5 +1,6 @@
-package com.skm.demo;
+package com.skm.demo.RowMappers;
 
+import com.skm.demo.Entities.Etat;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -10,12 +11,10 @@ public class EtatRowMapper implements RowMapper<Etat> {
         @Override
         public Etat mapRow(ResultSet rs, int rowNum) throws SQLException {
 
-            Etat etat = new Etat();
-            etat.nazwa = rs.getString("nazwa_etatu");
-            etat.minPlaca = rs.getFloat("placa_min");
-            etat.maxPlaca = rs.getFloat("placa_max");
-            etat.liczbaGodz = rs.getInt("wymagana_liczba_godzin");
-
+            Etat etat = new Etat(rs.getString("nazwa_etatu"),
+                    rs.getFloat("placa_min"),
+                    rs.getFloat("placa_max"),
+                    rs.getInt("wymagana_liczba_godzin"));
             return etat;
 
         }
