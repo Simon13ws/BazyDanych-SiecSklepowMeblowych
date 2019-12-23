@@ -7,7 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.sql.*;
 
 @SpringBootApplication
 public class Application implements CommandLineRunner {
@@ -17,7 +21,10 @@ public class Application implements CommandLineRunner {
 
 
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(Application.class);
+
+        builder.headless(false);
+        ConfigurableApplicationContext context = builder.run(args);
     }
 
 
@@ -27,6 +34,18 @@ public class Application implements CommandLineRunner {
         //jdbcTemplate.execute("INSERT INTO ETATY(Nazwa_etatu, Placa_min, Placa_max, Wymagana_liczba_godzin) VALUES ('testowy', 200.50, 423.32,40);");
         Etat etat = jdbcTemplate.queryForObject("Select * from etaty;", new Object[]{}, new EtatRowMapper());
         System.out.println(etat.getNazwa() + " " + etat.getMinPlaca() + " " + etat.getMaxPlaca() + " " + etat.getLiczbaGodz());
+        Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC","user","root");
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery("SELECT * FROM pracownicy");
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnsNumber = rsmd.getColumnCount();
+
+        System.out.println(columnsNumber);
+        for (int x = 0; x < columnsNumber; x++ ){
+            System.out.println(rsmd.getColumnName(x + 1));
+        }
+        GUI g = new GUI();
+        g.Addition(rsmd);
 
     }
 }
