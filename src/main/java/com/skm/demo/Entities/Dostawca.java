@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Dostawca {
+public class Dostawca extends Entity{
     private String nazwa;
     private String email;
     private int id_dostawcy;

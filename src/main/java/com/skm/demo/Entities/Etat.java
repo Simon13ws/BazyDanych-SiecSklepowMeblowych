@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Etat {
+public class Etat extends Entity{
     private String nazwa;
     private float minPlaca;
     private float maxPlaca;

@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Dzial {
+public class Dzial extends Entity{
     private String nazwa_dzialu;
     private int id_dzialu;
     private int id_sklepu;

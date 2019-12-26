@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Produkt {
+public class Produkt extends Entity{
 
     private String nazwa;
     private int nr_serii;

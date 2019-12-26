@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Zespol {
+public class Zespol extends Entity{
     private String nazwa_zesp;
     private int id_zesp;
 
@@ -20,4 +20,5 @@ public class Zespol {
         this.id_zesp = id_zesp;
         this.nazwa_zesp = nazwa_zesp;
     }
+
 }

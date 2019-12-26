@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Promocja {
+public class Promocja extends Entity{
     private String nazwa;
     private int id_promocji;
     private float wysokosc_promocji;

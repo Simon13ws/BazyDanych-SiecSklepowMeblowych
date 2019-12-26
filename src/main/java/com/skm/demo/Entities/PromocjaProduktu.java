@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PromocjaProduktu {
+public class PromocjaProduktu extends Entity{
     private int nr_serii;
     private int id_promocji;
     private Date od_kiedy;

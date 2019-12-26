@@ -1,27 +1,26 @@
 package com.skm.demo.App;
 
-
 import com.skm.demo.Entities.Etat;
 import com.skm.demo.RowMappers.EtatRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.lang.reflect.Field;
 import java.sql.*;
 
 @SpringBootApplication
-public class Application implements CommandLineRunner {
+public class Aplikacja implements CommandLineRunner {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
 
 
     public static void main(String[] args) {
-        SpringApplicationBuilder builder = new SpringApplicationBuilder(Application.class);
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(Aplikacja.class);
 
         builder.headless(false);
         ConfigurableApplicationContext context = builder.run(args);

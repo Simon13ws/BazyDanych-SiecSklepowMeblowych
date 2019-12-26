@@ -18,8 +18,6 @@ public class GUI extends JFrame {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
 
-
-
     }
     public static void Addition(ResultSetMetaData rsmd) throws SQLException {
         SpringLayout layout = new SpringLayout();
