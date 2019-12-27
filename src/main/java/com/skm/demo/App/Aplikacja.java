@@ -44,7 +44,7 @@ public class Aplikacja implements CommandLineRunner {
             System.out.println(rsmd.getColumnName(x + 1));
         }
         GUI g = new GUI();
-        g.Addition(rsmd);
+        g.Menu();
 
     }
 }
