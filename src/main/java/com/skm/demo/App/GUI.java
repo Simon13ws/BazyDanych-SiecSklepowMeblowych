@@ -1,7 +1,7 @@
 package com.skm.demo.App;
 
 import ch.qos.logback.core.Layout;
-
+import com.skm.demo.Entities.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,15 +13,12 @@ public class GUI extends JFrame {
 
     private static JFrame menuFrame;
     private static JFrame frame;
+    private static JFrame entityFrame;
 
     public GUI() {
         menuFrame = new JFrame("Menu");
         menuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         menuFrame.pack();
-
-        frame = new JFrame("Window");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
     }
 
     public static void Menu(){
@@ -34,6 +31,8 @@ public class GUI extends JFrame {
         menuFrame.setLocationRelativeTo(null);
 
         String [] nazwy = {"Sklepy", "Działy", "Produkty", "Promocje", "Promocje produktów", "Pracownicy", "Etaty", "Zespoly", "Dostawcy", "Sprzęt pracowniczy"};
+        String [] tabele = {"sklepy", "dzialy", "produkty","promocje","promocje_produktu","pracownicy","etaty","zespoly","dostawcy","sprzet_pracowniczy"};
+        Entity [] klasy = {new Produkt(), new Promocja(), new PromocjaProduktu(), new Pracownik(), new Etat(), new Zespol(), new Dostawca(), new SprzetPracowniczy()};
         JButton[] przyciski = new JButton[nazwy.length];
         int x = 100;
         int y = 100;
@@ -50,6 +49,14 @@ public class GUI extends JFrame {
                 x = 450;
             }
             content.add(przyciski[i]);
+
+            int j = i;
+            przyciski[i].addActionListener(e -> {
+                        menuFrame.dispose();
+                        Entity(nazwy[j], tabele[j], klasy[j]);
+                    }
+            );
+
         }
         SpringLayout.Constraints constr = null;
 
@@ -76,7 +83,33 @@ public class GUI extends JFrame {
         menuFrame.setVisible(true);
     }
 
+
+    public static void Entity(String nazwa, String tabela, Entity klasa) throws ClassNotFoundException {
+        entityFrame = new JFrame(nazwa);
+        entityFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        entityFrame.pack();
+
+        SpringLayout layout = new SpringLayout();
+        Container content = entityFrame.getContentPane();
+        content.setLayout(layout);
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        frame.setSize(screenSize.width/2,screenSize.height/2);
+        frame.setLocationRelativeTo(null);
+
+
+
+
+        entityFrame.setVisible(true);
+
+    }
+
     public static void Addition(ResultSetMetaData rsmd) throws SQLException {
+
+        frame = new JFrame("Window");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+
         SpringLayout layout = new SpringLayout();
         Container content = frame.getContentPane();
         content.setLayout(layout);

@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.lang.reflect.Field;
 import java.sql.*;
+import java.util.List;
 
 @SpringBootApplication
 public class Aplikacja implements CommandLineRunner {
@@ -26,14 +27,20 @@ public class Aplikacja implements CommandLineRunner {
         ConfigurableApplicationContext context = builder.run(args);
     }
 
+    public static void SelectAll()
+    {
+
+    }
 
     @Override
     public void run(String... strings) throws Exception {
 
-        //jdbcTemplate.execute("INSERT INTO ETATY(Nazwa_etatu, Placa_min, Placa_max, Wymagana_liczba_godzin) VALUES ('testowy', 200.50, 423.32,40);");
-        Etat etat = jdbcTemplate.queryForObject("Select * from etaty;", new Object[]{}, new EtatRowMapper());
-        System.out.println(etat.getNazwa() + " " + etat.getMinPlaca() + " " + etat.getMaxPlaca() + " " + etat.getLiczbaGodz());
+       // jdbcTemplate.execute("INSERT INTO ETATY(Nazwa_etatu, Placa_min, Placa_max, Wymagana_liczba_godzin) VALUES ('inny', 500.50, 723.32,40);");
+        List<Etat> etaty = jdbcTemplate.query("Select * from etaty;", new Object[]{}, new EtatRowMapper());
+        for (Etat e: etaty)
+            System.out.println(e.getNazwa() + " " + e.getMinPlaca() + " " + e.getMaxPlaca() + " " + e.getLiczbaGodz());
         Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC","user","root");
+
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery("SELECT * FROM pracownicy");
         ResultSetMetaData rsmd = rs.getMetaData();
