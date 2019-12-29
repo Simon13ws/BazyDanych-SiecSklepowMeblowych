@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import javax.swing.*;
 
 public class GUI extends JFrame {
@@ -32,7 +33,7 @@ public class GUI extends JFrame {
 
         String [] nazwy = {"Sklepy", "Działy", "Produkty", "Promocje", "Promocje produktów", "Pracownicy", "Etaty", "Zespoly", "Dostawcy", "Sprzęt pracowniczy"};
         String [] tabele = {"sklepy", "dzialy", "produkty","promocje","promocje_produktu","pracownicy","etaty","zespoly","dostawcy","sprzet_pracowniczy"};
-        Entity [] klasy = {new Produkt(), new Promocja(), new PromocjaProduktu(), new Pracownik(), new Etat(), new Zespol(), new Dostawca(), new SprzetPracowniczy()};
+        Entity [] typy = {new Sklep(), new Dzial(), new Produkt(), new Promocja(), new PromocjaProduktu(), new Pracownik(), new Etat(), new Zespol(), new Dostawca(), new SprzetPracowniczy()};
         JButton[] przyciski = new JButton[nazwy.length];
         int x = 100;
         int y = 100;
@@ -53,7 +54,13 @@ public class GUI extends JFrame {
             int j = i;
             przyciski[i].addActionListener(e -> {
                         menuFrame.dispose();
-                        Entity(nazwy[j], tabele[j], klasy[j]);
+                        try {
+                            Entity(nazwy[j], tabele[j], typy[j]);
+
+                        }catch(Exception exc)
+                        {
+                            System.out.println(exc);
+                        }
                     }
             );
 
@@ -84,7 +91,7 @@ public class GUI extends JFrame {
     }
 
 
-    public static void Entity(String nazwa, String tabela, Entity klasa) throws ClassNotFoundException {
+    public static void Entity(String nazwa, String tabela, Entity typ) throws ClassNotFoundException, SQLException {
         entityFrame = new JFrame(nazwa);
         entityFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         entityFrame.pack();
@@ -92,13 +99,28 @@ public class GUI extends JFrame {
         SpringLayout layout = new SpringLayout();
         Container content = entityFrame.getContentPane();
         content.setLayout(layout);
-
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setSize(screenSize.width/2,screenSize.height/2);
-        frame.setLocationRelativeTo(null);
 
+        entityFrame.setSize(screenSize.width/2,screenSize.height/2);
+        entityFrame.setLocationRelativeTo(null);
 
+        String [] nazwy = typ.podajPola();
+        String [][] entities;
 
+        entities = Aplikacja.SelectAll(tabela);
+        JTable t = new JTable(entities, nazwy);
+        content.add(new JScrollPane(t));
+        //TODO pozycja tabeli + przyciski
+
+        JButton dodaj = new JButton("Dodaj");
+        JButton edytuj = new JButton("Edytuj");
+        JButton cofnij = new JButton("Cofnij");
+
+        dodaj.setBounds(150,150,100,100);
+        content.add(dodaj);
+
+        layout.putConstraint(SpringLayout.WEST, dodaj, 5, SpringLayout.EAST, t);
+        layout.putConstraint(SpringLayout.NORTH, dodaj, 5, SpringLayout.NORTH, content);
 
         entityFrame.setVisible(true);
 
