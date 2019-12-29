@@ -12,17 +12,16 @@ import javax.swing.*;
 
 public class GUI extends JFrame {
 
-    private static JFrame menuFrame;
-    private static JFrame frame;
-    private static JFrame entityFrame;
-
     public GUI() {
-        menuFrame = new JFrame("Menu");
-        menuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        menuFrame.pack();
+
     }
 
     public static void Menu(){
+
+        JFrame menuFrame = new JFrame("Menu");
+        menuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        menuFrame.pack();
+
         SpringLayout layout = new SpringLayout();
         Container content = menuFrame.getContentPane();
         content.setLayout(layout);
@@ -32,7 +31,7 @@ public class GUI extends JFrame {
         menuFrame.setLocationRelativeTo(null);
 
         String [] nazwy = {"Sklepy", "Działy", "Produkty", "Promocje", "Promocje produktów", "Pracownicy", "Etaty", "Zespoly", "Dostawcy", "Sprzęt pracowniczy"};
-        String [] tabele = {"sklepy", "dzialy", "produkty","promocje","promocje_produktu","pracownicy","etaty","zespoly","dostawcy","sprzet_pracowniczy"};
+        String [] tabele = {"sklepy", "dzialy", "produkty","promocje","promocja_produktu","pracownicy","etaty","zespoly","dostawcy","sprzet_pracowniczy"};
         Entity [] typy = {new Sklep(), new Dzial(), new Produkt(), new Promocja(), new PromocjaProduktu(), new Pracownik(), new Etat(), new Zespol(), new Dostawca(), new SprzetPracowniczy()};
         JButton[] przyciski = new JButton[nazwy.length];
         int x = 100;
@@ -92,7 +91,8 @@ public class GUI extends JFrame {
 
 
     public static void Entity(String nazwa, String tabela, Entity typ) throws ClassNotFoundException, SQLException {
-        entityFrame = new JFrame(nazwa);
+
+        JFrame entityFrame = new JFrame(nazwa);
         entityFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         entityFrame.pack();
 
@@ -117,10 +117,36 @@ public class GUI extends JFrame {
         JButton cofnij = new JButton("Cofnij");
 
         dodaj.setBounds(150,150,100,100);
-        content.add(dodaj);
+        edytuj.setBounds(150,150,100,100);
+        cofnij.setBounds(150,150,100,100);
 
-        layout.putConstraint(SpringLayout.WEST, dodaj, 5, SpringLayout.EAST, t);
+        content.add(dodaj);
+        content.add(edytuj);
+        content.add(cofnij);
+
+        layout.putConstraint(SpringLayout.EAST, dodaj, 5, SpringLayout.EAST, t);
         layout.putConstraint(SpringLayout.NORTH, dodaj, 5, SpringLayout.NORTH, content);
+
+        layout.putConstraint(SpringLayout.EAST, edytuj, 5, SpringLayout.EAST, t);
+        layout.putConstraint(SpringLayout.NORTH, edytuj, 5, SpringLayout.SOUTH, dodaj);
+
+        layout.putConstraint(SpringLayout.EAST, cofnij, 5, SpringLayout.EAST, t);
+        layout.putConstraint(SpringLayout.NORTH, cofnij, 5, SpringLayout.SOUTH, edytuj);
+
+
+        cofnij.addActionListener(e -> {
+                    entityFrame.dispose();
+                    try {
+                        Menu();
+
+                    }catch(Exception exc)
+                    {
+                        System.out.println(exc);
+                    }
+                }
+        );
+
+
 
         entityFrame.setVisible(true);
 
@@ -128,7 +154,7 @@ public class GUI extends JFrame {
 
     public static void Addition(ResultSetMetaData rsmd) throws SQLException {
 
-        frame = new JFrame("Window");
+        JFrame frame = new JFrame("Window");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
 
