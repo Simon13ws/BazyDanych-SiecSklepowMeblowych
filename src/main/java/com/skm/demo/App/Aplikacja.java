@@ -22,13 +22,6 @@ public class Aplikacja implements CommandLineRunner {
     private JdbcTemplate jdbcTemplate;
     private static Connection con;
 
-    public static void main(String[] args) {
-        SpringApplicationBuilder builder = new SpringApplicationBuilder(Aplikacja.class);
-
-        builder.headless(false);
-        ConfigurableApplicationContext context = builder.run(args);
-    }
-
     public static String[][] SelectAll(String tabela) throws SQLException {
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery("SELECT * FROM " + tabela);
@@ -64,6 +57,56 @@ public class Aplikacja implements CommandLineRunner {
         return entities;
     }
 
+    public JdbcTemplate getJDBC(){
+        return jdbcTemplate;
+    }
+
+
+    //Dodawanie dziala ale jeszcze nie ma sprawdzania kluczy głównych i poprawności danych
+    public static void dodajWiersz(String [] pola, String tabela, Aplikacja a) throws SQLException {
+        JdbcTemplate jdbcTemplate2 = a.getJDBC();
+        System.out.println("x");
+        String sql = "INSERT INTO "+tabela+" (";
+        ResultSetMetaData rsmd = podajMetaDaneTabeli(tabela);
+        for(int i=0; i<rsmd.getColumnCount(); i++)
+        {
+            sql += rsmd.getColumnName(i+1);
+            if(i<rsmd.getColumnCount()-1)
+                sql += ", ";
+        }
+        sql += ") VALUES (";
+        for(int i=0; i<rsmd.getColumnCount(); i++)
+        {
+            sql += "?";
+            if(i<rsmd.getColumnCount()-1)
+                sql += ", ";
+            else
+                sql+="); ";
+        }
+        System.out.println("x2");
+        int i = jdbcTemplate2.update(sql,pola);
+    }
+
+    public static ResultSetMetaData podajMetaDaneTabeli(String tabela) throws SQLException {
+        con = DriverManager.getConnection("jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC","user","root");
+
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery("SELECT * FROM "+tabela);
+        ResultSetMetaData rsmd = rs.getMetaData();
+
+        return rsmd;
+    }
+
+
+
+    public static void main(String[] args) {
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(Aplikacja.class);
+
+        builder.headless(false);
+        ConfigurableApplicationContext context = builder.run(args);
+    }
+
+
     @Override
     public void run(String... strings) throws Exception {
 
@@ -83,7 +126,7 @@ public class Aplikacja implements CommandLineRunner {
             System.out.println(rsmd.getColumnName(x + 1));
         }
         */
-        GUI g = new GUI();
+        GUI g = new GUI(this);
         g.Menu();
 
     }
