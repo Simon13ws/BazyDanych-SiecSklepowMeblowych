@@ -226,8 +226,12 @@ public class GUI extends JFrame {
 
         zatwierdz.addActionListener(e -> {
                     try {
-                        for(int i=0; i<fields.length; i++)
+                        for(int i=0; i<fields.length; i++) {
                             wartosci[i] = fields[i].getText();
+                            wartosci[i] = wartosci[i].trim();
+                            if(wartosci[i].isEmpty())
+                                wartosci[i] = null;
+                        }
                         Aplikacja.dodajWiersz(wartosci,tabela,a);
                         addFrame.dispose();
                         Entity(nazwa, tabela, typ);
