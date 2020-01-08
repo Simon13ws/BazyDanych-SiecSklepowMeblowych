@@ -1,0 +1,2 @@
+Usuwanie rekordów:
+jeśli usuniemy rekord jednej tabeli, który jest połączony z inną tabelą poprzez klucz obcy - usuwanie kaskadowe (dla promocji i etatu i sklepu) w innym wypadku usuwanie wartosci i zmiana na null
