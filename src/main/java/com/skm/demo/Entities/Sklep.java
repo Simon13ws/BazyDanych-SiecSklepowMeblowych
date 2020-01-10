@@ -11,7 +11,6 @@ public class Sklep extends Entity{
     private int kod_pocztowy;
     private int id_kierownika;
     private int id_sklepu;
-    private int id_pracownika; //???
 
     public Sklep(){
 
@@ -24,6 +23,5 @@ public class Sklep extends Entity{
         this.kod_pocztowy = kod_pocztowy;
         this.id_kierownika = id_kierownika;
         this.id_sklepu = id_sklepu;
-        this.id_pracownika = 0;
     }
 }

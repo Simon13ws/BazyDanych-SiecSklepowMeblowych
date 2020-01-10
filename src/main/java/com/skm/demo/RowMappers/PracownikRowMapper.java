@@ -16,7 +16,7 @@ public class PracownikRowMapper implements RowMapper<Pracownik> {
                 rs.getString("nazwisko"),
                 rs.getInt("id_pracownika"),
                 rs.getInt("id_szefa"),
-                (Etat)rs.getObject("etaty_nazwa_etatu"),
+                rs.getString("etaty_nazwa_etatu"),
                 rs.getFloat("placa"),
                 rs.getDate("zatrudniony"),
                 rs.getInt("zespoly_id_zesp"),

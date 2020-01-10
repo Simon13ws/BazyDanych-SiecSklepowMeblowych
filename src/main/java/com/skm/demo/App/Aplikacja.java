@@ -13,7 +13,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootApplication
 public class Aplikacja implements CommandLineRunner {
@@ -22,7 +24,27 @@ public class Aplikacja implements CommandLineRunner {
     private JdbcTemplate jdbcTemplate;
     private static Connection con;
 
-    public static String[][] SelectAll(String tabela) throws SQLException {
+    public static LinkedHashMap<Integer, String> getPKID(String tabela, Aplikacja a) throws SQLException {
+
+        DatabaseMetaData md = con.getMetaData();
+        LinkedHashMap<Integer, String> pk = new LinkedHashMap<Integer, String>();
+        ResultSet rsPk = md.getPrimaryKeys(null,null,tabela);
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery("SELECT * FROM "+tabela);
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnsCount = rsmd.getColumnCount();
+        // rsPK nie ma nazwy kolumn z klucza głównego
+        if(rsPk.next()) {
+            for (int i = 1; i <= columnsCount; i++) {
+                String pkName = rsPk.getString("COLUMN_NAME");
+                if (rsmd.getColumnName(i).equals(pkName))
+                    pk.put(i, pkName);
+            }
+        }
+        return pk;
+    }
+
+    public static String[][] selectAll(String tabela) throws SQLException {
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery("SELECT * FROM " + tabela);
 
@@ -47,14 +69,25 @@ public class Aplikacja implements CommandLineRunner {
             }
             i++;
         }
-        for(int x=0; x<rowsCount; x++) {
-            for (int y = 0; y < columnsCount; y++) {
-                System.out.print(entities[x][y]+ " ");
-            }
-            System.out.print("\n" + tabela);
-        }
 
         return entities;
+    }
+
+    public static void deleteRow(String tabela, LinkedHashMap<String, Object> wartosci, Aplikacja a){
+        String sql = "DELETE FROM " + tabela + " WHERE ";
+        int n = 0;
+        for(Map.Entry<String,Object> w: wartosci.entrySet()) {
+            if(w.getKey().contains("id") || w.getKey().contains("numer"))
+                sql += w.getKey() + " = " + w.getValue();
+            else
+                sql += w.getKey() + " = '" + w.getValue() + "'";
+            if(n < wartosci.size()-1)
+                sql += " AND ";
+            else
+                sql += ";";
+        }
+        JdbcTemplate jdbcTemplate2 = a.getJDBC();
+        jdbcTemplate2.update(sql);
     }
 
     public JdbcTemplate getJDBC(){
@@ -84,7 +117,7 @@ public class Aplikacja implements CommandLineRunner {
                 sql+="); ";
         }
         System.out.println("x2");
-        int i = jdbcTemplate2.update(sql,pola);
+        jdbcTemplate2.update(sql,pola);
     }
 
     public static ResultSetMetaData podajMetaDaneTabeli(String tabela) throws SQLException {

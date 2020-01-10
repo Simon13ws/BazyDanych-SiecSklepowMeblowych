@@ -7,11 +7,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Pracownik extends Entity{
-    private int id_pracownika;
+
     private String imie;
     private String nazwisko;
+    private int id_pracownika;
     private int id_szefa;
-    private Etat etat;
+    private String etat;
     private float placa;
     private Date zatrudniony;
     private int id_zespolu;
@@ -22,7 +23,7 @@ public class Pracownik extends Entity{
     {
 
     }
-    public Pracownik(String imie, String nazwisko, int id_pracownika, int id_szefa, Etat etat, float placa, Date zatrudniony, int id_zespolu, int id_sklepu){
+    public Pracownik(String imie, String nazwisko, int id_pracownika, int id_szefa, String etat, float placa, Date zatrudniony, int id_zespolu, int id_sklepu){
         this.id_pracownika = id_pracownika;
         this.imie = imie;
         this.nazwisko = nazwisko;

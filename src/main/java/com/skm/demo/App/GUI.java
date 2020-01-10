@@ -8,7 +8,11 @@ import java.awt.event.ActionListener;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class GUI extends JFrame {
 
@@ -109,27 +113,47 @@ public class GUI extends JFrame {
         String [] nazwy = typ.podajPola();
         String [][] rows;
 
-        rows = Aplikacja.SelectAll(tabela);
+        rows = Aplikacja.selectAll(tabela);
         JTable t = new JTable(rows, nazwy);
-        content.add(new JScrollPane(t));
+        JScrollPane jsp = new JScrollPane(t);
+        content.add(jsp);
+
+
         //TODO pozycja tabeli + przyciski
+
+        JTextField szukaj = new JTextField(20);
+        szukaj.setEditable(true);
+        szukaj.setSize(180, 60);
+
+        content.add(szukaj);
 
         JButton dodaj = new JButton("Dodaj");
         JButton edytuj = new JButton("Edytuj");
+        JButton usun = new JButton("Usuń");
         JButton cofnij = new JButton("Cofnij");
+
+        edytuj.setEnabled(false);
+        usun.setEnabled(false);
 
         content.add(dodaj);
         content.add(edytuj);
+        content.add(usun);
         content.add(cofnij);
 
-        layout.putConstraint(SpringLayout.EAST, dodaj, 5, SpringLayout.EAST, t);
-        layout.putConstraint(SpringLayout.NORTH, dodaj, 5, SpringLayout.NORTH, content);
+        layout.putConstraint(SpringLayout.WEST, szukaj, 5, SpringLayout.EAST, jsp);
+        layout.putConstraint(SpringLayout.NORTH, szukaj, 5, SpringLayout.NORTH, content);
 
-        layout.putConstraint(SpringLayout.EAST, edytuj, 5, SpringLayout.EAST, t);
+        layout.putConstraint(SpringLayout.WEST, dodaj, 5, SpringLayout.EAST, jsp);
+        layout.putConstraint(SpringLayout.NORTH, dodaj, 5, SpringLayout.SOUTH, szukaj);
+
+        layout.putConstraint(SpringLayout.WEST, edytuj, 5, SpringLayout.EAST, jsp);
         layout.putConstraint(SpringLayout.NORTH, edytuj, 5, SpringLayout.SOUTH, dodaj);
 
-        layout.putConstraint(SpringLayout.EAST, cofnij, 5, SpringLayout.EAST, t);
-        layout.putConstraint(SpringLayout.NORTH, cofnij, 5, SpringLayout.SOUTH, edytuj);
+        layout.putConstraint(SpringLayout.WEST, usun, 5, SpringLayout.EAST, jsp);
+        layout.putConstraint(SpringLayout.NORTH, usun, 5, SpringLayout.SOUTH, edytuj);
+
+        layout.putConstraint(SpringLayout.WEST, cofnij, 5, SpringLayout.EAST, jsp);
+        layout.putConstraint(SpringLayout.NORTH, cofnij, 5, SpringLayout.SOUTH, usun);
 
         dodaj.addActionListener(e -> {
                     entityFrame.dispose();
@@ -156,6 +180,51 @@ public class GUI extends JFrame {
                 }
         );
 
+        t.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+            public void valueChanged(ListSelectionEvent event) {
+                edytuj.setEnabled(true);
+                usun.setEnabled(true);
+
+                edytuj.addActionListener(e -> {
+                            entityFrame.dispose();
+                            try {
+                                Addition(nazwa, tabela, typ);
+
+                            }catch(Exception exc)
+                            {
+                                System.out.println(exc);
+                            }
+                        }
+                );
+
+                usun.addActionListener(e -> {
+                            //entityFrame.dispose();
+                            try {
+                                LinkedHashMap<Integer, String> pkID = a.getPKID(tabela, a);
+                                LinkedHashMap<String, Object> wartosci = new LinkedHashMap<String, Object>();
+                                int row = t.getSelectedRow();
+
+                                for(Map.Entry<Integer, String> k: pkID.entrySet())
+                                {
+                                    wartosci.put(k.getValue(), t.getValueAt(row, k.getKey()-1));
+                                }
+                                for(Map.Entry<String, Object> w: wartosci.entrySet())
+                                {
+                                    System.out.println(w.getKey() + " " + w.getValue() + " " + w.getClass().getSimpleName());
+                                }
+
+                                Aplikacja.deleteRow(tabela, wartosci, a);
+
+
+                            }catch(Exception exc)
+                            {
+                                exc.printStackTrace();
+                            }
+                        }
+                );
+
+            }
+        });
 
 
         entityFrame.setVisible(true);
