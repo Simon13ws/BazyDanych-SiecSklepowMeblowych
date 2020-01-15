@@ -5,6 +5,7 @@ import com.skm.demo.Entities.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Method;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -110,27 +111,29 @@ public class GUI extends JFrame {
         entityFrame.setSize(screenSize.width/2,screenSize.height/2);
         entityFrame.setLocationRelativeTo(null);
 
-        String [] nazwy = typ.podajPola();
-        String [][] rows;
+        ArrayList<String> listaNazw = typ.podajPola();
+        String [] nazwy = listaNazw.toArray(new String[listaNazw.size()]);
+        ArrayList<String[]> listaWierszy = Aplikacja.selectAll(tabela);
+        String [][] wiersze = listaWierszy.toArray(new String[listaWierszy.size()][listaNazw.size()]);
 
-        rows = Aplikacja.selectAll(tabela);
-        JTable t = new JTable(rows, nazwy);
+        JTable t = new JTable(wiersze, nazwy);
         JScrollPane jsp = new JScrollPane(t);
         content.add(jsp);
 
 
         //TODO pozycja tabeli + przyciski
 
-        JTextField szukaj = new JTextField(20);
-        szukaj.setEditable(true);
-        szukaj.setSize(180, 60);
+        JTextField szukajF = new JTextField(20);
+        szukajF.setEditable(true);
+        szukajF.setSize(180, 60);
 
-        content.add(szukaj);
+        content.add(szukajF);
 
         JButton dodaj = new JButton("Dodaj");
         JButton edytuj = new JButton("Edytuj");
         JButton usun = new JButton("Usuń");
         JButton cofnij = new JButton("Cofnij");
+        JButton szukajB = new JButton("Szukaj");
 
         edytuj.setEnabled(false);
         usun.setEnabled(false);
@@ -139,12 +142,16 @@ public class GUI extends JFrame {
         content.add(edytuj);
         content.add(usun);
         content.add(cofnij);
+        content.add(szukajB);
 
-        layout.putConstraint(SpringLayout.WEST, szukaj, 5, SpringLayout.EAST, jsp);
-        layout.putConstraint(SpringLayout.NORTH, szukaj, 5, SpringLayout.NORTH, content);
+        layout.putConstraint(SpringLayout.WEST, szukajF, 5, SpringLayout.EAST, jsp);
+        layout.putConstraint(SpringLayout.NORTH, szukajF, 5, SpringLayout.NORTH, content);
+
+        layout.putConstraint(SpringLayout.WEST, szukajB, 5, SpringLayout.EAST, szukajF);
+        layout.putConstraint(SpringLayout.NORTH, szukajB, 5, SpringLayout.NORTH, content);
 
         layout.putConstraint(SpringLayout.WEST, dodaj, 5, SpringLayout.EAST, jsp);
-        layout.putConstraint(SpringLayout.NORTH, dodaj, 5, SpringLayout.SOUTH, szukaj);
+        layout.putConstraint(SpringLayout.NORTH, dodaj, 5, SpringLayout.SOUTH, szukajF);
 
         layout.putConstraint(SpringLayout.WEST, edytuj, 5, SpringLayout.EAST, jsp);
         layout.putConstraint(SpringLayout.NORTH, edytuj, 5, SpringLayout.SOUTH, dodaj);
@@ -155,11 +162,15 @@ public class GUI extends JFrame {
         layout.putConstraint(SpringLayout.WEST, cofnij, 5, SpringLayout.EAST, jsp);
         layout.putConstraint(SpringLayout.NORTH, cofnij, 5, SpringLayout.SOUTH, usun);
 
+
+        szukajB.addActionListener(e -> {
+
+        });
+
         dodaj.addActionListener(e -> {
                     entityFrame.dispose();
                     try {
                         Addition(nazwa, tabela, typ);
-
                     }catch(Exception exc)
                     {
                         System.out.println(exc);
@@ -172,7 +183,6 @@ public class GUI extends JFrame {
                     entityFrame.dispose();
                     try {
                         Menu();
-
                     }catch(Exception exc)
                     {
                         System.out.println(exc);
@@ -184,11 +194,17 @@ public class GUI extends JFrame {
             public void valueChanged(ListSelectionEvent event) {
                 edytuj.setEnabled(true);
                 usun.setEnabled(true);
-
                 edytuj.addActionListener(e -> {
                             entityFrame.dispose();
                             try {
                                 Addition(nazwa, tabela, typ);
+
+                                ArrayList<String[]> listaWierszy = Aplikacja.selectAll(tabela);
+                                String [][] wiersze = listaWierszy.toArray(new String[listaWierszy.size()][listaNazw.size()]);
+                                JTable t2 = new JTable(wiersze, nazwy);
+                                content.remove(t);
+                                content.add(new JScrollPane(t2));
+                                entityFrame.setVisible(true);
 
                             }catch(Exception exc)
                             {
@@ -198,9 +214,8 @@ public class GUI extends JFrame {
                 );
 
                 usun.addActionListener(e -> {
-                            //entityFrame.dispose();
                             try {
-                                LinkedHashMap<Integer, String> pkID = a.getPKID(tabela, a);
+                                LinkedHashMap<Integer, String> pkID = a.getKeys(tabela, a, "primary",0);
                                 LinkedHashMap<String, Object> wartosci = new LinkedHashMap<String, Object>();
                                 int row = t.getSelectedRow();
 
@@ -213,22 +228,28 @@ public class GUI extends JFrame {
                                     System.out.println(w.getKey() + " " + w.getValue() + " " + w.getClass().getSimpleName());
                                 }
 
-                                Aplikacja.deleteRow(tabela, wartosci, a);
+                                Aplikacja.deleteRow(tabela, wartosci, typ, a);
+                                ArrayList<String[]> listaWierszy = Aplikacja.selectAll(tabela);
+                                String [][] wiersze = listaWierszy.toArray(new String[listaWierszy.size()][listaNazw.size()]);
+                                JTable t2 = new JTable(wiersze, nazwy);
+                                content.remove(t);
+                                content.add(new JScrollPane(t2));
+                                entityFrame.setVisible(true);
 
 
                             }catch(Exception exc)
                             {
                                 exc.printStackTrace();
                             }
+
                         }
+
                 );
 
             }
         });
 
-
         entityFrame.setVisible(true);
-
     }
 
     public void Addition(String nazwa, String tabela, Entity typ) throws SQLException {
@@ -245,39 +266,73 @@ public class GUI extends JFrame {
         addFrame.setSize(screenSize.width/2,screenSize.height/2);
         addFrame.setLocationRelativeTo(null);
 
-        String [] pola = typ.podajPola();
+        ArrayList<String> pola = typ.podajPola();
 
-        JTextField[] areas = new JTextField[pola.length];
-        JTextField[] fields = new JTextField[pola.length];
+        JTextField[] areas = new JTextField[pola.size()];
+        JComponent[] fields = new JComponent[pola.size()];
+        LinkedHashMap<Integer, String> fkTable = Aplikacja.getKeys(tabela,a,"foreign", 1);
+        LinkedHashMap<Integer, String> fkName = Aplikacja.getKeys(tabela,a,"foreign", 0);
+        JComboBox[] boxes = new JComboBox[fkName.size()];
 
         SpringLayout.Constraints constr = null;
-
-        for(int i = 0; i < pola.length; i++) {
-            areas[i] = new JTextField(pola[i]);
+        for(int i = 0; i < pola.size(); i++) {
+            areas[i] = new JTextField(pola.get(i));
             areas[i].setEditable(false);
             areas[i].setHorizontalAlignment(JTextField.CENTER);
-            areas[i].setColumns(pola.length);
-            //System.out.println(areas[i].getColumns());
+            areas[i].setColumns(pola.size());
             content.add(areas[i]);
+            if(fkName.containsKey(i+1)){
+                try {
+                    ArrayList<String> kolumna = Aplikacja.selectColumn(fkTable.get(i+1), fkName.get(i + 1));
+                    kolumna.add(0,"");
+                    String [] wartosci = kolumna.toArray(new String[kolumna.size()]);
+                    JComboBox box = new JComboBox(wartosci);
+                    ((JLabel)box.getRenderer()).setHorizontalAlignment(JLabel.CENTER);
+                    box.setPrototypeDisplayValue("XXXXXXXXx");
+                    fields[i] = box;
+                    content.add(fields[i]);
 
-            fields[i] = new JTextField(areas[i].getColumns());
-            content.add(fields[i]);
+                }catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            else {
+                if(pola.get(i).contains("id") || pola.get(i).contains("numer")) {
+                    try {
+                        Method metoda = typ.getClass().getMethod("getNumber");
+                        Integer n = Aplikacja.getID(tabela);
+                        JTextField field = new JTextField(n.toString(), areas[i].getColumns());
+                        field.setEditable(false);
+                        field.setHorizontalAlignment(JTextField.CENTER);
+                        fields[i] = field;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                else
+                    fields[i] = new JTextField(areas[i].getColumns());
+                content.add(fields[i]);
+                }
 
         }
 
         Spring xSpring = Spring.constant(5,15,25);
         Spring ySpring = Spring.constant(5,10, 15);
 
+
         constr = layout.getConstraints(areas[0]);
         constr.setX(xSpring);
         constr.setY(ySpring);
         layout.getConstraints(fields[0]).setX(xSpring);
         layout.putConstraint(SpringLayout.NORTH, fields[0],ySpring,SpringLayout.SOUTH,areas[0]);
+        layout.putConstraint(SpringLayout.SOUTH, fields[0],25,SpringLayout.NORTH,fields[0]);
 
         for(int i = 1 ; i< areas.length ; i++) {
             layout.getConstraints(areas[i]).setY(ySpring);
             layout.putConstraint(SpringLayout.WEST, areas[i], xSpring,SpringLayout.EAST, areas[i-1]);
             layout.putConstraint(SpringLayout.NORTH, fields[i],ySpring,SpringLayout.SOUTH,areas[i]);
+            layout.putConstraint(SpringLayout.SOUTH, fields[i],25,SpringLayout.NORTH,fields[i]);
             layout.putConstraint(SpringLayout.WEST, fields[i],xSpring,SpringLayout.EAST,areas[i-1]);
 
         }
@@ -291,17 +346,24 @@ public class GUI extends JFrame {
         layout.putConstraint(SpringLayout.NORTH, zatwierdz, ySpring,SpringLayout.SOUTH,fields[0]);
         layout.putConstraint(SpringLayout.NORTH, anuluj,ySpring,SpringLayout.SOUTH,zatwierdz);
 
-        String [] wartosci = new String[pola.length];
+        String [] wartosci = new String[pola.size()];
 
         zatwierdz.addActionListener(e -> {
                     try {
                         for(int i=0; i<fields.length; i++) {
-                            wartosci[i] = fields[i].getText();
-                            wartosci[i] = wartosci[i].trim();
+                            if(fkName.containsKey(i+1)){
+                                JComboBox box = (JComboBox) fields[i];
+                                wartosci[i] = box.getSelectedItem().toString();
+                            }
+                            else {
+                                JTextField field = (JTextField) fields[i];
+                                wartosci[i] = field.getText();
+                                wartosci[i] = wartosci[i].trim();
+                            }
                             if(wartosci[i].isEmpty())
                                 wartosci[i] = null;
                         }
-                        Aplikacja.dodajWiersz(wartosci,tabela,a);
+                        Aplikacja.addRow(wartosci,tabela,a);
                         addFrame.dispose();
                         Entity(nazwa, tabela, typ);
 
@@ -329,40 +391,57 @@ public class GUI extends JFrame {
     //NA RAZIE JEST TO SAMO CO W OKNIE DODAWANIA - pytanie czy nie polączyc, zeby nie duplikowac
     public void Edition(String nazwa, String tabela, Entity typ) throws SQLException {
 
-        JFrame editFrame = new JFrame("Edycja");
-        editFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        editFrame.pack();
+        JFrame addFrame = new JFrame("Dodawanie");
+        addFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        addFrame.pack();
 
         SpringLayout layout = new SpringLayout();
-        Container content = editFrame.getContentPane();
+        Container content = addFrame.getContentPane();
         content.setLayout(layout);
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        editFrame.setSize(screenSize.width/2,screenSize.height/2);
-        editFrame.setLocationRelativeTo(null);
+        addFrame.setSize(screenSize.width/2,screenSize.height/2);
+        addFrame.setLocationRelativeTo(null);
 
-        String [] pola = typ.podajPola();
+        ArrayList<String> pola = typ.podajPola();
 
-        JTextField[] areas = new JTextField[pola.length];
-        JTextField[] fields = new JTextField[pola.length];
+        JTextField[] areas = new JTextField[pola.size()];
+        JComponent[] fields = new JComponent[pola.size()];
+        LinkedHashMap<Integer, String> fkTable = Aplikacja.getKeys(tabela,a,"foreign", 1);
+        LinkedHashMap<Integer, String> fkName = Aplikacja.getKeys(tabela,a,"foreign", 0);
+        JComboBox[] boxes = new JComboBox[fkName.size()];
 
         SpringLayout.Constraints constr = null;
-
-        for(int i = 0; i < areas.length; i++) {
-            areas[i] = new JTextField(pola[i]);
+        for(int i = 0; i < pola.size(); i++) {
+            areas[i] = new JTextField(pola.get(i));
             areas[i].setEditable(false);
             areas[i].setHorizontalAlignment(JTextField.CENTER);
-            areas[i].setColumns(7);
+            areas[i].setColumns(pola.size());
             //System.out.println(areas[i].getColumns());
             content.add(areas[i]);
-
-            fields[i] = new JTextField(areas[i].getColumns());
-            content.add(fields[i]);
-
+            if(fkName.containsKey(i+1)){
+                //TODO Tu się wywala wychodzi na jakis null, nie wiem czy dobrze klucze pobiera
+                try {
+                    ArrayList<String> kolumna = Aplikacja.selectColumn(fkTable.get(i+1), fkName.get(i + 1));
+                    String [] wartosci = kolumna.toArray(new String[kolumna.size()]);
+                    fields[i] = new JComboBox(wartosci);
+                    content.add(fields[i]);
+                    System.out.println(i + 1);
+                }catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            else {
+                fields[i] = new JTextField(areas[i].getColumns());
+                content.add(fields[i]);
+                System.out.println(i);
+            }
         }
 
         Spring xSpring = Spring.constant(5,15,25);
         Spring ySpring = Spring.constant(5,10, 15);
+
 
         constr = layout.getConstraints(areas[0]);
         constr.setX(xSpring);
@@ -378,7 +457,6 @@ public class GUI extends JFrame {
 
         }
 
-
         JButton zatwierdz = new JButton("Zatwierdz");
         JButton anuluj = new JButton("Anuluj");
 
@@ -388,10 +466,25 @@ public class GUI extends JFrame {
         layout.putConstraint(SpringLayout.NORTH, zatwierdz, ySpring,SpringLayout.SOUTH,fields[0]);
         layout.putConstraint(SpringLayout.NORTH, anuluj,ySpring,SpringLayout.SOUTH,zatwierdz);
 
+        String [] wartosci = new String[pola.size()];
+
         zatwierdz.addActionListener(e -> {
-                    //TUTAJ WYWOLANIE FUNKCJI EDYTUJACEJ
-                    editFrame.dispose();
                     try {
+                        for(int i=0; i<fields.length; i++) {
+                            if(fkName.containsKey(i+1)){
+                                JComboBox box = (JComboBox) fields[i];
+                                wartosci[i] = box.getSelectedItem().toString();
+                            }
+                            else {
+                                JTextField field = (JTextField) fields[i];
+                                wartosci[i] = field.getText();
+                                wartosci[i] = wartosci[i].trim();
+                            }
+                            if(wartosci[i].isEmpty())
+                                wartosci[i] = null;
+                        }
+                        Aplikacja.addRow(wartosci,tabela,a);
+                        addFrame.dispose();
                         Entity(nazwa, tabela, typ);
 
                     }catch(Exception exc)
@@ -402,7 +495,7 @@ public class GUI extends JFrame {
         );
 
         anuluj.addActionListener(e -> {
-                    editFrame.dispose();
+                    addFrame.dispose();
                     try {
                         Entity(nazwa, tabela, typ);
 
@@ -412,9 +505,7 @@ public class GUI extends JFrame {
                     }
                 }
         );
-
-        editFrame.setVisible(true);
-
+        addFrame.setVisible(true);
     }
 
 }

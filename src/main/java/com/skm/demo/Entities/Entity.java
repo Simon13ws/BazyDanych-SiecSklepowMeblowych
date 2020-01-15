@@ -1,19 +1,21 @@
 package com.skm.demo.Entities;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 public class Entity {
 
-    public String [] podajPola()
+
+    public ArrayList<String> podajPola()
     {
             Class klasa = this.getClass();
             Field [] fields = klasa.getDeclaredFields();
-            String [] pola = new String[fields.length];
+            ArrayList<String> pola = new ArrayList<String>();
             int i = 0;
 
             for(Field f: fields){
-                pola[i] = f.getName();
-                i++;
+                if(!java.lang.reflect.Modifier.isStatic(f.getModifiers()))
+                    pola.add(f.getName());
             }
             return pola;
     }

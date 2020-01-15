@@ -1,5 +1,7 @@
 package com.skm.demo.Entities;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,10 +21,6 @@ public class Pracownik extends Entity{
     private int id_sklepu;
 
 
-    public Pracownik()
-    {
-
-    }
     public Pracownik(String imie, String nazwisko, int id_pracownika, int id_szefa, String etat, float placa, Date zatrudniony, int id_zespolu, int id_sklepu){
         this.id_pracownika = id_pracownika;
         this.imie = imie;

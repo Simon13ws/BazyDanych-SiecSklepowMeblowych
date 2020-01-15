@@ -11,6 +11,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -24,61 +25,108 @@ public class Aplikacja implements CommandLineRunner {
     private JdbcTemplate jdbcTemplate;
     private static Connection con;
 
-    public static LinkedHashMap<Integer, String> getPKID(String tabela, Aplikacja a) throws SQLException {
+    public static LinkedHashMap<Integer, String> getKeys(String tabela, Aplikacja a, String keyType, int pkOrTable) throws SQLException {
 
         DatabaseMetaData md = con.getMetaData();
-        LinkedHashMap<Integer, String> pk = new LinkedHashMap<Integer, String>();
-        ResultSet rsPk = md.getPrimaryKeys(null,null,tabela);
+        LinkedHashMap<Integer, String> keys = new LinkedHashMap<Integer, String>();
+        ResultSet rsKeys;
+        if(keyType.equals("primary"))
+            rsKeys = md.getPrimaryKeys(null,null,tabela);
+        else
+            rsKeys = md.getImportedKeys(null,null,tabela);
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery("SELECT * FROM "+tabela);
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnsCount = rsmd.getColumnCount();
-        // rsPK nie ma nazwy kolumn z klucza głównego
-        if(rsPk.next()) {
+        while(rsKeys.next()) {
+
             for (int i = 1; i <= columnsCount; i++) {
-                String pkName = rsPk.getString("COLUMN_NAME");
-                if (rsmd.getColumnName(i).equals(pkName))
-                    pk.put(i, pkName);
+                try {
+                    String kName = new String();
+                    System.out.println(rsKeys.getObject("PKTABLE_NAME").toString());
+                    if (keyType.equals("primary")) {
+                        kName = rsKeys.getString("COLUMN_NAME");
+                    } else {
+                        kName = rsKeys.getString("FKCOLUMN_NAME");
+                    }
+                    //System.out.println(rsmd.getColumnName(i));
+                    if (rsmd.getColumnName(i).equals(kName) && !kName.isEmpty() && !keys.containsKey(i)) {
+                        if(pkOrTable == 1)
+                            kName = rsKeys.getString("PKTABLE_NAME");
+                        else if(pkOrTable == 0 && keyType.equals("foreign"))
+                            kName = rsKeys.getString("PKCOLUMN_NAME");
+                        keys.put(i, kName);
+                        break;
+                    }
+                }catch(Exception e)
+                {e.printStackTrace();}
             }
         }
-        return pk;
+        return keys;
     }
 
-    public static String[][] selectAll(String tabela) throws SQLException {
+    public static int getID(String tabela) throws SQLException{
+        String sql = "SELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES \n" +
+                "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '" + tabela + "'";
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery(sql);
+        rs.next();
+        return rs.getInt("AUTO_INCREMENT");
+    }
+
+    public static ArrayList<String> selectColumn(String tabela, String column) throws SQLException {
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery("SELECT " + column + " FROM " + tabela);
+
+        ArrayList<String> values = new ArrayList<String>();
+        int i = 0;
+        while(rs.next())
+        {
+            values.add(rs.getObject(1).toString());
+            System.out.println(i);
+            i++;
+        }
+
+        return values;
+    }
+
+    public static ArrayList<String[]> selectAll(String tabela) throws SQLException {
+
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery("SELECT * FROM " + tabela);
 
-        int rowsCount = 0;
-        if(rs.last())
-        {
-            rowsCount = rs.getRow();
-            rs.beforeFirst();
-        }
         int columnsCount = rs.getMetaData().getColumnCount();
-        String[][] entities = new String[rowsCount][columnsCount];
-        int i = 1;
+        ArrayList<String[]> entities = new ArrayList<String[]>();
         while(rs.next())
         {
+            String[] values = new String[columnsCount];
             for(int col=1; col<= columnsCount; col++)
             {
                 Object value = rs.getObject(col);
                 if(value != null)
-                    entities[i-1][col-1] = value.toString();
+                    values[col-1] = value.toString();
                 else
-                    entities[i-1][col-1] = "";
+                    values[col-1] = "";
             }
-            i++;
+            entities.add(values);
         }
 
         return entities;
     }
 
-    public static void deleteRow(String tabela, LinkedHashMap<String, Object> wartosci, Aplikacja a){
+    public static void deleteRow(String tabela, LinkedHashMap<String, Object> wartosci, Entity typ, Aplikacja a){
         String sql = "DELETE FROM " + tabela + " WHERE ";
         int n = 0;
         for(Map.Entry<String,Object> w: wartosci.entrySet()) {
-            if(w.getKey().contains("id") || w.getKey().contains("numer"))
+            if(w.getKey().contains("id") || w.getKey().contains("numer")) {
                 sql += w.getKey() + " = " + w.getValue();
+                try {
+                    Method metoda = typ.getClass().getMethod("addNumber", Integer.class);
+                    metoda.invoke(typ, w.getValue());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             else
                 sql += w.getKey() + " = '" + w.getValue() + "'";
             if(n < wartosci.size()-1)
@@ -96,7 +144,7 @@ public class Aplikacja implements CommandLineRunner {
 
 
     //Dodawanie dziala ale jeszcze nie ma sprawdzania kluczy głównych i poprawności danych
-    public static void dodajWiersz(String [] pola, String tabela, Aplikacja a) throws SQLException {
+    public static void addRow(String [] pola, String tabela, Aplikacja a) throws SQLException {
         JdbcTemplate jdbcTemplate2 = a.getJDBC();
         System.out.println("x");
         String sql = "INSERT INTO "+tabela+" (";
@@ -116,7 +164,6 @@ public class Aplikacja implements CommandLineRunner {
             else
                 sql+="); ";
         }
-        System.out.println("x2");
         jdbcTemplate2.update(sql,pola);
     }
 
@@ -138,7 +185,6 @@ public class Aplikacja implements CommandLineRunner {
         builder.headless(false);
         ConfigurableApplicationContext context = builder.run(args);
     }
-
 
     @Override
     public void run(String... strings) throws Exception {

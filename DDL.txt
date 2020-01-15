@@ -1,0 +1,176 @@
+create table dostawcy(
+                         nazwa varchar(30) not null,
+                         email varchar(50),
+                         id_dostawcy decimal not null,
+                         constraint dostawcy_pk
+                             primary key (id_dostawcy)
+);
+create table dzialy(
+                       nazwa_dzialu varchar(30) not null,
+                       id_dzialu decimal not null,
+                       sklepy_id_sklepu decimal not null,
+                       constraint dzialy_pk
+                           primary key (id_dzialu)
+);
+create table etaty(
+                      nazwa_etatu varchar(20) not null,
+                      placa_min decimal(6, 2) not null,
+                      placa_max decimal(8, 2),
+                      wymagana_liczba_godzin decimal not null,
+                      constraint etaty_pk
+                          primary key (nazwa_etatu)
+);
+create table pracownicy(
+                           imie varchar(20) not null,
+                           nazwisko varchar(30) not null,
+                           id_pracownika decimal not null,
+                           id_szefa decimal,
+                           etaty_nazwa_etatu varchar(20) not null,
+                           placa decimal(8, 2) not null,
+                           zatrudniony date not null,
+                           zespoly_id_zesp decimal,
+                           sklepy_id_sklepu decimal not null,
+                           constraint pracownicy_pk
+                               primary key (id_pracownika)
+);
+create table produkty(
+                         nazwa varchar(30) not null,
+                         numer_serii decimal not null,
+                         cena_bazowa decimal(8, 2) not null,
+                         liczba decimal not null,
+                         dzialy_id_dzialu decimal not null,
+                         dostawcy_id_dostawcy decimal not null,
+                         cena_aktualna decimal(8, 2) not null,
+                         constraint produkty_pk
+                             primary key (numer_serii)
+);
+create table promocja_produktu(
+                                  produkty_numer_serii decimal not null,
+                                  promocje_id_promocji decimal not null,
+                                  od date not null,
+                                  do date not null,
+                                  constraint promocja_produktu_pk
+                                      primary key (
+                                                   produkty_numer_serii,
+                                                   promocje_id_promocji,
+                                                   od,
+                                                   do
+                                          )
+);
+create table promocje(
+                         nazwa varchar(30),
+                         id_promocji decimal not null,
+                         wysokosc_prom decimal(5, 2) not null default 0,
+                         constraint promocje_pk
+                             primary key (id_promocji)
+);
+create table sklepy(
+                       adres varchar(30) not null,
+                       miasto varchar(30) not null,
+                       kod_pocztowy decimal(5, 0) not null,
+                       id_kierownika decimal,
+                       id_sklepu decimal not null,
+                       constraint sklepy_pk
+                           primary key (id_sklepu)
+);
+create table sprzet_pracowniczy(
+                                   nazwa varchar(30) not null,
+                                   numer_serii decimal not null,
+                                   dzialy_id_dzialu decimal not null,
+                                   liczba decimal not null,
+                                   constraint sprzet_pracowniczy_pk
+                                       primary key (numer_serii)
+);
+create table zespoly(
+                        nazwa_zesp varchar(30) not null,
+                        id_zesp decimal not null,
+                        constraint zespoly_pk
+                            primary key (id_zesp)
+);
+
+alter table dzialy
+    add constraint dzialy_sklepy
+        foreign key (sklepy_id_sklepu)
+            references sklepy (id_sklepu)
+            ON UPDATE CASCADE ON DELETE CASCADE;
+
+alter table pracownicy
+    add constraint pracownicy_etaty
+        foreign key (etaty_nazwa_etatu)
+            references Etaty (nazwa_etatu)
+            ON UPDATE CASCADE ON DELETE CASCADE;
+alter table pracownicy
+    add constraint pracownicy_sklepy
+        foreign key (sklepy_id_sklepu)
+            references sklepy (id_sklepu)
+            ON UPDATE CASCADE ON DELETE CASCADE;
+alter table pracownicy
+    add constraint pracownicy_zespoly
+        foreign key (zespoly_id_zesp)
+            references zespoly (id_zesp)
+            ON DELETE SET NULL;
+alter table produkty
+    add constraint produkty_dostawcy
+        foreign key (dostawcy_id_dostawcy)
+            references dostawcy (id_dostawcy);
+alter table produkty
+    add constraint produkty_dzialy
+        foreign key (dzialy_id_dzialu)
+            references dzialy (id_dzialu);
+alter table promocja_produktu
+    add constraint promocja_produktu_produkty
+        foreign key (produkty_numer_serii)
+            references produkty (numer_serii)
+            ON UPDATE CASCADE ON DELETE CASCADE;
+alter table promocja_produktu
+    add constraint promocja_produktu_promocje
+        foreign key (promocje_id_promocji)
+            references promocje (id_promocji)
+            ON UPDATE CASCADE ON DELETE CASCADE;
+alter table sklepy
+    add constraint sklepy_pracownicy
+        foreign key (id_kierownika)
+            references pracownicy (id_pracownika);
+alter table sprzet_pracowniczy
+    add constraint sprzer_pracowniczy_dzialy
+        foreign key (dzialy_id_dzialu)
+            references dzialy (id_dzialu);
+
+(SELECT
+    TABLE_NAME,
+    COLUMN_NAME,
+    CONSTRAINT_NAME,
+    REFERENCED_TABLE_NAME,
+    REFERENCED_COLUMN_NAME
+FROM
+    INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+WHERE
+        REFERENCED_TABLE_SCHEMA = 'skm'
+  AND REFERENCED_TABLE_NAME = 'etaty');
+
+CREATE PROCEDURE update_fk(IN tabela varchar(20))
+BEGIN
+DECLARE i INT DEFAULT 0;
+DECLARE n INT DEFAULT 0;
+DECLARE tabelka varchar(20);
+DECLARE kolumna varchar(20);
+
+SELECT COUNT(*) FROM
+    INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+WHERE REFERENCED_TABLE_SCHEMA = 'skm'
+  AND REFERENCED_TABLE_NAME = 'etaty'
+into n;
+SET i=0;
+WHILE i<n DO
+    SELECT TABLE_NAME, COLUMN_NAME
+        from INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+    WHERE REFERENCED_TABLE_SCHEMA = 'skm'
+      AND REFERENCED_TABLE_NAME = 'etaty'
+    into tabelka, kolumna
+    LIMIT i,1;
+    end while;
+END;
+
+show index column_name from etaty where Key_name = 'PRIMARY';
+
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = 'skm' AND CONSTRAINT_NAME='PRIMARY' AND TABLE_NAME = 'etaty';

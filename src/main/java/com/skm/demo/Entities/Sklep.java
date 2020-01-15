@@ -3,6 +3,9 @@ package com.skm.demo.Entities;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 @Getter
 @Setter
 public class Sklep extends Entity{
@@ -11,10 +14,6 @@ public class Sklep extends Entity{
     private int kod_pocztowy;
     private int id_kierownika;
     private int id_sklepu;
-
-    public Sklep(){
-
-    }
 
     public Sklep(String adres, String miasto, int kod_pocztowy, int id_kierownika, int id_sklepu)
     {

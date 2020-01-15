@@ -11,6 +11,7 @@ public class Etat extends Entity{
     private float maxPlaca;
     private int liczbaGodz;
 
+
     public Etat()
     {
 

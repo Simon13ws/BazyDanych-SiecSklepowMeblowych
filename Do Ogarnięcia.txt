@@ -1,7 +1,12 @@
 Usuwanie rekordów:
-- jeśli usuniemy rekord jednej tabeli, który jest połączony z inną tabelą poprzez klucz obcy - usuwanie kaskadowe (dla promocji i etatu i sklepu) w innym wypadku usuwanie wartosci i zmiana na null. DZIAŁA - zmienić tylko, żeby tabelka od razu się zaktualizowała po usunięciu. Przy usuwaniu jeszcze dodać okienko potwierdzenia.
 
-- automatyczne generowanie ID -> SEKWENCJA
+- usuwanie - Przy usuwaniu jeszcze dodać okienko potwierdzenia.
+
+- edycja
+
+- szukanie
+
+- automatyczne generowanie ID -> SEKWENCJA  | ZROBIONE
 
 - sprawdzanie poprawności formy wprowadzanych danych - sprawdzenie i komunikat gdy będą niepoprawne regexy
 
@@ -9,4 +14,4 @@ Usuwanie rekordów:
 
 - okno informacyjne dla sklepow (z marżą, liczbą pracowników)
 
-- podpowiadanie listy kluczy obcych przy wprowadzaniu/edytowaniu obiektow
+- podpowiadanie listy kluczy obcych przy wprowadzaniu/edytowaniu obiektow | Jest, jeszcze edycja
