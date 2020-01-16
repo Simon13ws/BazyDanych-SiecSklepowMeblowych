@@ -65,7 +65,7 @@ public class Aplikacja implements CommandLineRunner {
         return keys;
     }
 
-    public static int getID(String tabela) throws SQLException{
+    public static int getNextNumber(String tabela) throws SQLException{
         String sql = "SELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES \n" +
                 "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '" + tabela + "'";
         Statement st = con.createStatement();
@@ -88,6 +88,18 @@ public class Aplikacja implements CommandLineRunner {
         }
 
         return values;
+    }
+
+    public static ArrayList<String> getColumnNames(String tabela) throws SQLException {
+
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery("SELECT * FROM "+tabela + " LIMIT 1");
+        ResultSetMetaData rsmd = rs.getMetaData();
+        ArrayList<String> columnNames = new ArrayList<String>();
+        int columnsCount = rsmd.getColumnCount();
+        for(int i=1; i<=columnsCount; i++)
+            columnNames.add(rsmd.getColumnName(i));
+        return columnNames;
     }
 
     public static ArrayList<String[]> selectAll(String tabela) throws SQLException {
@@ -114,19 +126,12 @@ public class Aplikacja implements CommandLineRunner {
         return entities;
     }
 
-    public static void deleteRow(String tabela, LinkedHashMap<String, Object> wartosci, Entity typ, Aplikacja a){
+    public static void deleteRow(String tabela, LinkedHashMap<String, Object> wartosci, Aplikacja a){
         String sql = "DELETE FROM " + tabela + " WHERE ";
         int n = 0;
         for(Map.Entry<String,Object> w: wartosci.entrySet()) {
-            if(w.getKey().contains("id") || w.getKey().contains("numer")) {
+            if(w.getKey().contains("id") || w.getKey().contains("numer"))
                 sql += w.getKey() + " = " + w.getValue();
-                try {
-                    Method metoda = typ.getClass().getMethod("addNumber", Integer.class);
-                    metoda.invoke(typ, w.getValue());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
             else
                 sql += w.getKey() + " = '" + w.getValue() + "'";
             if(n < wartosci.size()-1)

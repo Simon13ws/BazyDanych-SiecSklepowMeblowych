@@ -1,52 +1,53 @@
+SET foreign_key_checks = 0;
 create table dostawcy(
-                         nazwa varchar(30) not null,
-                         email varchar(50),
-                         id_dostawcy decimal not null,
+                         nazwa varchar(40) not null,
+                         email varchar(40),
+                         id_dostawcy INT AUTO_INCREMENT,
                          constraint dostawcy_pk
                              primary key (id_dostawcy)
 );
 create table dzialy(
                        nazwa_dzialu varchar(30) not null,
-                       id_dzialu decimal not null,
-                       sklepy_id_sklepu decimal not null,
+                       id_dzialu INT AUTO_INCREMENT,
+                       sklepy_id_sklepu int not null,
                        constraint dzialy_pk
                            primary key (id_dzialu)
 );
 create table etaty(
-                      nazwa_etatu varchar(20) not null,
-                      placa_min decimal(6, 2) not null,
-                      placa_max decimal(8, 2),
-                      wymagana_liczba_godzin decimal not null,
+                      nazwa_etatu varchar(40) not null,
+                      placa_min float not null,
+                      placa_max float,
+                      wymagana_liczba_godzin int not null,
                       constraint etaty_pk
                           primary key (nazwa_etatu)
 );
 create table pracownicy(
-                           imie varchar(20) not null,
-                           nazwisko varchar(30) not null,
-                           id_pracownika decimal not null,
-                           id_szefa decimal,
-                           etaty_nazwa_etatu varchar(20) not null,
-                           placa decimal(8, 2) not null,
+                           imie varchar(40) not null,
+                           nazwisko varchar(40) not null,
+                           id_pracownika INT AUTO_INCREMENT,
+                           id_szefa int,
+                           etaty_nazwa_etatu varchar(40) not null,
+                           placa float not null,
                            zatrudniony date not null,
-                           zespoly_id_zesp decimal,
-                           sklepy_id_sklepu decimal not null,
+                           zespoly_id_zesp int,
+                           sklepy_id_sklepu int not null,
                            constraint pracownicy_pk
                                primary key (id_pracownika)
 );
 create table produkty(
-                         nazwa varchar(30) not null,
-                         numer_serii decimal not null,
-                         cena_bazowa decimal(8, 2) not null,
-                         liczba decimal not null,
-                         dzialy_id_dzialu decimal not null,
-                         dostawcy_id_dostawcy decimal not null,
-                         cena_aktualna decimal(8, 2) not null,
+                         nazwa varchar(40) not null,
+                         numer_serii INT AUTO_INCREMENT,
+                         cena_bazowa float not null,
+                         liczba int not null,
+                         dzialy_id_dzialu int not null,
+                         dostawcy_id_dostawcy int not null,
+                         cena_aktualna float not null,
                          constraint produkty_pk
                              primary key (numer_serii)
 );
 create table promocja_produktu(
-                                  produkty_numer_serii decimal not null,
-                                  promocje_id_promocji decimal not null,
+                                  produkty_numer_serii int not null,
+                                  promocje_id_promocji int not null,
                                   od date not null,
                                   do date not null,
                                   constraint promocja_produktu_pk
@@ -58,32 +59,32 @@ create table promocja_produktu(
                                           )
 );
 create table promocje(
-                         nazwa varchar(30),
-                         id_promocji decimal not null,
-                         wysokosc_prom decimal(5, 2) not null default 0,
+                         nazwa varchar(40),
+                         id_promocji INT AUTO_INCREMENT,
+                         wysokosc_prom float not null default 0,
                          constraint promocje_pk
                              primary key (id_promocji)
 );
 create table sklepy(
-                       adres varchar(30) not null,
-                       miasto varchar(30) not null,
-                       kod_pocztowy decimal(5, 0) not null,
-                       id_kierownika decimal,
-                       id_sklepu decimal not null,
+                       adres varchar(40) not null,
+                       miasto varchar(40) not null,
+                       kod_pocztowy int not null,
+                       id_kierownika int,
+                       id_sklepu INT AUTO_INCREMENT,
                        constraint sklepy_pk
                            primary key (id_sklepu)
 );
 create table sprzet_pracowniczy(
-                                   nazwa varchar(30) not null,
-                                   numer_serii decimal not null,
-                                   dzialy_id_dzialu decimal not null,
-                                   liczba decimal not null,
-                                   constraint sprzet_pracowniczy_pk
-                                       primary key (numer_serii)
+                        nazwa varchar(40) not null,
+                        numer_serii INT AUTO_INCREMENT,
+                        dzialy_id_dzialu int not null,
+                        liczba int not null,
+                        constraint sprzet_pracowniczy_pk
+                           primary key (numer_serii)
 );
 create table zespoly(
-                        nazwa_zesp varchar(30) not null,
-                        id_zesp decimal not null,
+                        nazwa_zesp varchar(40) not null,
+                        id_zesp INT AUTO_INCREMENT,
                         constraint zespoly_pk
                             primary key (id_zesp)
 );
@@ -93,7 +94,16 @@ alter table dzialy
         foreign key (sklepy_id_sklepu)
             references sklepy (id_sklepu)
             ON UPDATE CASCADE ON DELETE CASCADE;
-
+alter table pracownicy
+    add constraint pracownicy_szef
+        foreign key (id_szefa)
+            references Pracownicy (id_pracownika)
+            ON UPDATE CASCADE ON DELETE CASCADE;
+alter table pracownicy
+    add constraint pracownicy_etaty
+        foreign key (etaty_nazwa_etatu)
+            references Etaty (nazwa_etatu)
+            ON UPDATE CASCADE ON DELETE CASCADE;
 alter table pracownicy
     add constraint pracownicy_etaty
         foreign key (etaty_nazwa_etatu)
@@ -130,47 +140,14 @@ alter table promocja_produktu
 alter table sklepy
     add constraint sklepy_pracownicy
         foreign key (id_kierownika)
-            references pracownicy (id_pracownika);
+            references pracownicy (id_pracownika)
+            ON DELETE SET NULL;
 alter table sprzet_pracowniczy
-    add constraint sprzer_pracowniczy_dzialy
+    add constraint sprzet_pracowniczy_dzialy
         foreign key (dzialy_id_dzialu)
             references dzialy (id_dzialu);
 
-(SELECT
-    TABLE_NAME,
-    COLUMN_NAME,
-    CONSTRAINT_NAME,
-    REFERENCED_TABLE_NAME,
-    REFERENCED_COLUMN_NAME
-FROM
-    INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-WHERE
-        REFERENCED_TABLE_SCHEMA = 'skm'
-  AND REFERENCED_TABLE_NAME = 'etaty');
-
-CREATE PROCEDURE update_fk(IN tabela varchar(20))
-BEGIN
-DECLARE i INT DEFAULT 0;
-DECLARE n INT DEFAULT 0;
-DECLARE tabelka varchar(20);
-DECLARE kolumna varchar(20);
-
-SELECT COUNT(*) FROM
-    INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-WHERE REFERENCED_TABLE_SCHEMA = 'skm'
-  AND REFERENCED_TABLE_NAME = 'etaty'
-into n;
-SET i=0;
-WHILE i<n DO
-    SELECT TABLE_NAME, COLUMN_NAME
-        from INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-    WHERE REFERENCED_TABLE_SCHEMA = 'skm'
-      AND REFERENCED_TABLE_NAME = 'etaty'
-    into tabelka, kolumna
-    LIMIT i,1;
-    end while;
-END;
-
-show index column_name from etaty where Key_name = 'PRIMARY';
-
 SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = 'skm' AND CONSTRAINT_NAME='PRIMARY' AND TABLE_NAME = 'etaty';
+
+SELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pracownicy'

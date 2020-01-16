@@ -18,6 +18,11 @@ public class Produkt extends Entity{
     private int id_dostawcy;
     private float cena_aktualna;
 
+
+    public Produkt(){
+
+    }
+
     public Produkt(String nazwa, int nr_serii, float cena_bazowa, int liczba, int id_dzialu, int id_dostawcy, float cena_aktualna)
     {
         this.nazwa = nazwa;

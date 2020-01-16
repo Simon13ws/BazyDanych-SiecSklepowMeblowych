@@ -15,6 +15,11 @@ public class Sklep extends Entity{
     private int id_kierownika;
     private int id_sklepu;
 
+    public Sklep()
+    {
+
+    }
+
     public Sklep(String adres, String miasto, int kod_pocztowy, int id_kierownika, int id_sklepu)
     {
         this.adres = adres;

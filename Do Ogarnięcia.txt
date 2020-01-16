@@ -1,17 +1,21 @@
-Usuwanie rekordów:
+W trakcie:
 
 - usuwanie - Przy usuwaniu jeszcze dodać okienko potwierdzenia.
 
-- edycja
+- edycja - Jest wspólna funkcja dla dodawania i edycji (trzeba usunąć funkcję Addition i odpowiednio nazwać funkcję Edition, aby pasowałą do obu funkcji) - trzeba jeszcze dorobić zatwierdzanie edytowania i funkcję update. (Na razie zatwierdzenie edycji to jest dodanie elementu!)
 
-- szukanie
+Do zrobienia:
+
+- szukanie (jest pole i przycisk) zrobić listener na przycisk, ma pobrać to co wpisane w polu i trzeba zrobić funkcję, która przeszuka wszystkie kolumny zawierające daną sekwencję i wypisze wiersze, które zawierają kolumny z podaną sekwencją.
+
+- sprawdzanie poprawności formy wprowadzanych danych - sprawdzenie i komunikat gdy będą niepoprawne. regexy(?)
+
+- poprawienie wyglądu gui (okno edycji i dodawania dostosować, tabelkę w Entity też dostosować do rozmiaru wierszy).
+
+- okno informacyjne dla sklepow (z marżą, liczbą pracowników) (tu dodać procedurę zliczającą 10% ceny wszystkich produktów w sklepie oraz może procedurę/funkcję zliczającą pracowników)
+
+Zrobione:
 
 - automatyczne generowanie ID -> SEKWENCJA  | ZROBIONE
 
-- sprawdzanie poprawności formy wprowadzanych danych - sprawdzenie i komunikat gdy będą niepoprawne regexy
-
-- poprawienie wyglądu gui
-
-- okno informacyjne dla sklepow (z marżą, liczbą pracowników)
-
-- podpowiadanie listy kluczy obcych przy wprowadzaniu/edytowaniu obiektow | Jest, jeszcze edycja
+- podpowiadanie listy kluczy obcych przy wprowadzaniu/edytowaniu obiektow | Jest, jeszcze edycja | ZROBIONE

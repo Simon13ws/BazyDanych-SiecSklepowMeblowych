@@ -14,6 +14,11 @@ public class SprzetPracowniczy extends Entity{
     private int id_dzialu;
     private int liczba;
 
+    public SprzetPracowniczy()
+    {
+
+    }
+
     public SprzetPracowniczy(String nazwa, int nr_serii, int id_dzialu, int liczba)
     {
         this.nazwa = nazwa;

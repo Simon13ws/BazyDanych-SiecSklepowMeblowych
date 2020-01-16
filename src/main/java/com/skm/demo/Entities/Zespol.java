@@ -11,9 +11,11 @@ import java.util.Collections;
 public class Zespol extends Entity{
     private String nazwa_zesp;
     private int id_zesp;
-    public static int kolejnaLiczba = 1;
-    public static ArrayList<Integer> wolnyNr = new ArrayList<Integer>();
 
+
+    public Zespol(){
+
+    }
 
     public Zespol(String nazwa_zesp, int id_zesp)
     {
