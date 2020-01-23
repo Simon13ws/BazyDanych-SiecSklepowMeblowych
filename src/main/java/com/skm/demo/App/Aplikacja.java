@@ -65,16 +65,14 @@ public class Aplikacja implements CommandLineRunner {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC","user","root");
         JdbcTemplate jdbcTemplate2 = a.getJDBC();
 
-        SimpleJdbcCall simpleJdbc = new SimpleJdbcCall(jdbcTemplate2).withProcedureName("checkType");
+        SimpleJdbcCall simpleJdbc = new SimpleJdbcCall(jdbcTemplate2).withFunctionName("checkType");
         LinkedHashMap<String, Object> in = new LinkedHashMap<>();
         in.put("tabela", tabela);
         in.put("kolumna", kolumna);
         in.put("wartosc", wartosc);
-        in.put("error", 0);
-        in.put("tresc", "");
-        Map<String, Object> out = simpleJdbc.execute(in);
+        String tresc = simpleJdbc.executeFunction(String.class, in);
         con.close();
-        return out.get("tresc").toString();
+        return tresc;
     }
 
     public static String podajMarze(String id_sklepu) throws SQLException {
@@ -117,7 +115,6 @@ public class Aplikacja implements CommandLineRunner {
         for(int i=0; i<tabele.length; i++){
             jdbcTemplate2.execute("Analyze Table " + tabele[i]);
             incs[i] = getNextNumber(tabele[i]);
-            System.out.println(incs[i] + " " + tabele[i]);
         }
 
         con.close();
@@ -214,7 +211,6 @@ public class Aplikacja implements CommandLineRunner {
                 sql += ";";
             n++;
         }
-        System.out.println(sql);
         JdbcTemplate jdbcTemplate2 = a.getJDBC();
         jdbcTemplate2.update(sql);
         con.close();

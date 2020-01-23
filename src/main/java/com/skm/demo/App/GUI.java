@@ -155,11 +155,14 @@ public class GUI extends JFrame {
             JButton usun = new JButton("Usuń");
             JButton cofnij = new JButton("Cofnij");
             JButton szukajB = new JButton("Szukaj");
+            ArrayList<String> nazwyKolumn = listaNazw;
+            nazwyKolumn.add(0,null);
+            JComboBox szukajC = new JComboBox(nazwyKolumn.toArray());
 
             informacje.setEnabled(false);
             edytuj.setEnabled(false);
             usun.setEnabled(false);
-
+            content.add(szukajC);
             content.add(informacje);
             content.add(dodaj);
             content.add(edytuj);
@@ -173,8 +176,11 @@ public class GUI extends JFrame {
             layout.putConstraint(SpringLayout.WEST, szukajB, 5, SpringLayout.EAST, szukajF);
             layout.putConstraint(SpringLayout.NORTH, szukajB, 5, SpringLayout.NORTH, content);
 
+            layout.putConstraint(SpringLayout.WEST, szukajC, 5, SpringLayout.EAST, jsp);
+            layout.putConstraint(SpringLayout.NORTH, szukajC, 5, SpringLayout.SOUTH, szukajF);
+
             layout.putConstraint(SpringLayout.WEST, informacje, 5, SpringLayout.EAST, jsp);
-            layout.putConstraint(SpringLayout.NORTH, informacje, 5, SpringLayout.SOUTH, szukajF);
+            layout.putConstraint(SpringLayout.NORTH, informacje, 5, SpringLayout.SOUTH, szukajC);
 
             layout.putConstraint(SpringLayout.WEST, dodaj, 5, SpringLayout.EAST, jsp);
             layout.putConstraint(SpringLayout.NORTH, dodaj, 5, SpringLayout.SOUTH, informacje);
@@ -191,13 +197,17 @@ public class GUI extends JFrame {
             szukajB.addActionListener(e -> {
                 String wyrazenie = szukajF.getText();
                 LinkedHashSet<ArrayList<String>> listaWierszy2 = new LinkedHashSet<ArrayList<String>>();
-                for (int i = 0; i < nazwy.length; i++) {
-                    try {
-                        listaWierszy2.addAll(Aplikacja.szukaj(tabela, nazwy[i], wyrazenie));
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
+                try {
+                    if(szukajC.getSelectedItem() != null)
+                        listaWierszy2.addAll(Aplikacja.szukaj(tabela, szukajC.getSelectedItem().toString(), wyrazenie));
+                    else {
+                        for (int i = 0; i < nazwy.length; i++)
+                            listaWierszy2.addAll(Aplikacja.szukaj(tabela, nazwy[i], wyrazenie));
                     }
-                }
+                }catch (SQLException ex) {
+                    ex.printStackTrace();
+                    }
+
 
                 String[][] wiersze2 = new String[listaWierszy2.size()][listaNazw.size()];
                 int i = 0;
@@ -427,7 +437,6 @@ public class GUI extends JFrame {
                 } else {
                     if (pola.get(i).contains("numer") || pola.get(i).contains("id")) {
                         try {
-                            System.out.println(autoInc.length);
                             Integer n;
                             if (edycja)
                                 n = Integer.parseInt(w.get(i));
@@ -486,6 +495,8 @@ public class GUI extends JFrame {
             komunikaty = new ArrayList<JLabel>();
                     try {
                         ArrayList<String> wartosci = new ArrayList<String>();
+                        ArrayList<String> pola2 = new ArrayList<>();
+                        pola2.addAll(pola);
                         int x=-1;
                         for(int i=0; i<fields.size(); i++) {
                             x++;
@@ -495,15 +506,14 @@ public class GUI extends JFrame {
                                     wartosci.add(box.getSelectedItem().toString());
                                 else
                                 {
-                                    pola.remove(x);
-                                    x--;
+                                    wartosci.add("");
                                     continue;
                                 }
                             }
                             else {
-                                if(pola.get(x).contains("numer") || pola.get(x).contains("id"))
+                                if(pola2.get(x).contains("numer") || pola2.get(x).contains("id"))
                                 {
-                                    pola.remove(x);
+                                    pola2.remove(x);
                                     x--;
                                     continue;
                                 }
@@ -513,12 +523,9 @@ public class GUI extends JFrame {
                                         wartosci.add(field.getText().trim());
                                     }
                             }
-                            if(wartosci.get(x) != null && wartosci.get(x).isEmpty())
-                                wartosci.set(x, "");
                         }
                         for (int i=0; i<wartosci.size(); i++) {
-                            String odp = Aplikacja.checkType(tabela, pola.get(i), wartosci.get(i), a);
-                            System.out.println(pola.get(i) +  " " + wartosci.get(i));
+                            String odp = Aplikacja.checkType(tabela, pola2.get(i), wartosci.get(i), a);
                             if(odp.length() > 0)
                                 komunikaty.add(new JLabel(odp));
                         }
@@ -545,15 +552,16 @@ public class GUI extends JFrame {
                                     pkPrzedEdycja.put(k.getValue(), w.get(k.getKey() - 1));
                                 }
 
-                                Aplikacja.updateRow(pola, wartosci, tabela, pkPrzedEdycja, a);
+                                Aplikacja.updateRow(pola2, wartosci, tabela, pkPrzedEdycja, a);
                             } else {
-                                Aplikacja.addRow(pola, wartosci, tabela, a);
+                                Aplikacja.addRow(pola2, wartosci, tabela, a);
                                 autoInc[inc]++;
                             }
+                            frame.dispose();
+                            modyfikacja = false;
+                            Entity(nazwa, tabela, inc);
                         }
-                        frame.dispose();
-                        modyfikacja = false;
-                        Entity(nazwa, tabela, inc);
+
                     }catch(Exception exc)
                     {
                         exc.printStackTrace();
