@@ -74,6 +74,17 @@ public class Aplikacja implements CommandLineRunner {
         con.close();
         return tresc;
     }
+    public static String checkPlaca(String etat, String wartosc, Aplikacja a) throws SQLException {
+        con = DriverManager.getConnection("jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC","user","root");
+        JdbcTemplate jdbcTemplate2 = a.getJDBC();
+        SimpleJdbcCall simpleJdbc = new SimpleJdbcCall(jdbcTemplate2).withFunctionName("checkPlaca");
+        LinkedHashMap<String, Object> in = new LinkedHashMap<>();
+        in.put("etat", etat);
+        in.put("placa", Float.parseFloat(wartosc));
+        String tresc = simpleJdbc.executeFunction(String.class, in);
+        con.close();
+        return tresc;
+    }
 
     public static String podajMarze(String id_sklepu) throws SQLException {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC","user","root");
@@ -220,8 +231,35 @@ public class Aplikacja implements CommandLineRunner {
         return jdbcTemplate;
     }
 
-    public static void updateRow(ArrayList<String> kolumny, ArrayList<String> wartosci, String tabela, LinkedHashMap<String, String> pk, Aplikacja a) throws SQLException{
+    public static void updateProm(String tabela, String wartosc, Aplikacja a) throws SQLException {
+
+        String nr = "produkty_numer_serii";
+        String drugiNr = "promocje_id_promocji";
+        String in1 = "nr_serii";
+        String in2 = "id_prom";
+        if(tabela.equals("promocje")){
+            nr = drugiNr;
+            drugiNr = "produkty_numer_serii";
+            in1 = in2;
+            in2 = "nr_serii";
+        }
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC","user","root");
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery("SELECT " + drugiNr + " from promocja_produktu where " + nr + " = " + wartosc);
+
+        System.out.println("ok");
+        JdbcTemplate jdbcTemplate2 = a.getJDBC();
+        while(rs.next())
+        {
+            SimpleJdbcCall simpleJdbc = new SimpleJdbcCall(jdbcTemplate2).withProcedureName("promocja");
+            LinkedHashMap<String, Object> in = new LinkedHashMap<>();
+            in.put(in1, wartosc);
+            in.put(in2, rs.getObject(1).toString());
+            simpleJdbc.execute(in);
+        }
+        con.close();
+    }
+    public static void updateRow(ArrayList<String> kolumny, ArrayList<String> wartosci, String tabela, LinkedHashMap<String, String> pk, Aplikacja a) throws SQLException{
         String sql = "UPDATE " + tabela + " SET ";
         for(int i=0; i<kolumny.size(); i++)
         {
@@ -229,7 +267,7 @@ public class Aplikacja implements CommandLineRunner {
                 sql += kolumny.get(i) + " = " + wartosci.get(i);
             else
                 sql += kolumny.get(i) + " = '" + wartosci.get(i) + "'";
-            if(i<kolumny.size())
+            if(i<kolumny.size()-1)
                 sql += ", ";
             else
                 sql += " WHERE ";
@@ -249,9 +287,16 @@ public class Aplikacja implements CommandLineRunner {
         JdbcTemplate jdbcTemplate2 = a.getJDBC();
         jdbcTemplate2.update(sql);
         con.close();
+        if(tabela.equals("produkty") || tabela.equals("promocje"))
+        {
+            if(pk.get("numer_serii") != null)
+                updateProm(tabela, pk.get("numer_serii"), a);
+            else
+                updateProm(tabela, pk.get("id_promocji"), a);
+        }
+
     }
 
-    //Dodawanie dziala ale jeszcze nie ma sprawdzania kluczy głównych i poprawności danych
     public static void addRow(ArrayList<String> kolumny, ArrayList<String> wartosci, String tabela, Aplikacja a) throws SQLException {
 
         String sql = "INSERT INTO "+tabela+" (";
@@ -264,9 +309,7 @@ public class Aplikacja implements CommandLineRunner {
         sql += ") VALUES (";
         for(int i=0; i<kolumny.size(); i++)
         {
-            if(kolumny.get(i).contains("id") || kolumny.get(i).contains("numer"))
-                sql += wartosci.get(i);
-            else
+            if(kolumny.get(i) != null)
                 sql += "'" + wartosci.get(i)+"'";
             if(i<kolumny.size()-1)
                 sql += ", ";
@@ -279,6 +322,14 @@ public class Aplikacja implements CommandLineRunner {
         if(!tabela.equals("etaty") && !tabela.equals("promocja_produktu")) {
             int x = getNextNumber(tabela) + 1;
             jdbcTemplate2.update("Alter TABLE " + tabela + " AUTO_INCREMENT = " + String.valueOf(x));
+        }
+        else if(tabela.equals("promocja_produktu"))
+        {
+            SimpleJdbcCall simpleJdbc = new SimpleJdbcCall(jdbcTemplate2).withProcedureName("promocja");
+            LinkedHashMap<String, Object> in = new LinkedHashMap<>();
+            in.put("id_prom", wartosci.get(1));
+            in.put("nr_serii", wartosci.get(0));
+            simpleJdbc.execute(in);
         }
         con.close();
     }

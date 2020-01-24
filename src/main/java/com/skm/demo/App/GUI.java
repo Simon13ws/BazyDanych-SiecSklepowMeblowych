@@ -1,5 +1,7 @@
 package com.skm.demo.App;
 
+import org.springframework.jdbc.UncategorizedSQLException;
+
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -105,7 +107,7 @@ public class GUI extends JFrame {
 
     public void Entity(String nazwa, String tabela, int inc) throws ClassNotFoundException, SQLException {
             JFrame entityFrame = new JFrame(nazwa);
-            entityFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            entityFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             entityFrame.pack();
 
             SpringLayout layout = new SpringLayout();
@@ -155,7 +157,8 @@ public class GUI extends JFrame {
             JButton usun = new JButton("Usuń");
             JButton cofnij = new JButton("Cofnij");
             JButton szukajB = new JButton("Szukaj");
-            ArrayList<String> nazwyKolumn = listaNazw;
+            ArrayList<String> nazwyKolumn = new ArrayList<String>();
+            nazwyKolumn.addAll(listaNazw);
             nazwyKolumn.add(0,null);
             JComboBox szukajC = new JComboBox(nazwyKolumn.toArray());
 
@@ -243,8 +246,12 @@ public class GUI extends JFrame {
                         ArrayList<String> wartosci = new ArrayList<String>();
                         int row = t.getSelectedRow();
                         int columnsCount = t.getColumnCount();
-                        for (int i = 0; i < columnsCount; i++)
-                            wartosci.add(t.getValueAt(row, i).toString());
+                        for (int i = 0; i < columnsCount; i++) {
+                            if(t.getValueAt(row, i)==null)
+                                wartosci.add("");
+                            else
+                                wartosci.add(t.getValueAt(row, i).toString());
+                        }
                         try {
                             Informacje(listaNazw, wartosci, tabela);
                         }catch(SQLException exc)
@@ -497,6 +504,7 @@ public class GUI extends JFrame {
                         ArrayList<String> wartosci = new ArrayList<String>();
                         ArrayList<String> pola2 = new ArrayList<>();
                         pola2.addAll(pola);
+
                         int x=-1;
                         for(int i=0; i<fields.size(); i++) {
                             x++;
@@ -524,10 +532,24 @@ public class GUI extends JFrame {
                                     }
                             }
                         }
+                        String etat = new String();
                         for (int i=0; i<wartosci.size(); i++) {
+                            if(tabela.equals("pracownicy") && pola2.get(i).equals("etaty_nazwa_etatu"))
+                                etat = wartosci.get(i);
+
                             String odp = Aplikacja.checkType(tabela, pola2.get(i), wartosci.get(i), a);
                             if(odp.length() > 0)
                                 komunikaty.add(new JLabel(odp));
+                            else if(wartosci.get(i).isEmpty()) {
+                                wartosci.set(i, null);
+                            }
+                            else if(pola2.get(i).equals("placa"))
+                            {
+
+                                odp = Aplikacja.checkPlaca(etat, wartosci.get(i),a);
+                                if(odp.length() > 0)
+                                    komunikaty.add(new JLabel(odp));
+                            }
                         }
 
                         if(komunikaty.size() != 0) {
@@ -562,7 +584,28 @@ public class GUI extends JFrame {
                             Entity(nazwa, tabela, inc);
                         }
 
-                    }catch(Exception exc)
+                    }catch(UncategorizedSQLException exce)
+                    {
+                        String komunikat = new String();
+                        switch(tabela) {
+                            case "pracownicy":
+                                komunikat = "Placa powinna mieć wartość z przedziału odpowiedniego dla wybranego etatu!";
+                                break;
+                            case "promocje":
+                                komunikat = "Promocja powinna mieć wartość z przedziału 0.00-0.99!";
+                                break;
+                            case "promocja_produktu":
+                                komunikat = "Data zakończenia promocji musi być późniejsza od daty rozpoczęcia!";
+                                break;
+                        }
+                        JLabel naruszenie = new JLabel(komunikat);
+                        naruszenie.setForeground(Color.RED);
+                        layout.putConstraint(SpringLayout.WEST, naruszenie, xSpring, SpringLayout.EAST, zatwierdz);
+                        layout.putConstraint(SpringLayout.NORTH, naruszenie, xSpring, SpringLayout.SOUTH, fields.get(0));
+                        content.add(naruszenie);
+                        frame.setVisible(true);
+                    }
+                    catch(Exception exc)
                     {
                         exc.printStackTrace();
                     }
