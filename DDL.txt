@@ -16,10 +16,13 @@ create table dzialy(
 create table etaty(
                       nazwa_etatu varchar(40) not null,
                       placa_min float not null,
-                      placa_max float,
+                      placa_max float not null,
                       wymagana_liczba_godzin int not null,
                       constraint etaty_pk
-                          primary key (nazwa_etatu)
+                          primary key (nazwa_etatu),
+                      constraint above_zero check (wymagana_liczba_godzin > 0),
+                      constraint placa check (placa_min <= placa_max)
+
 );
 create table pracownicy(
                            imie varchar(40) not null,
@@ -34,17 +37,20 @@ create table pracownicy(
                            constraint pracownicy_pk
                                primary key (id_pracownika)
 );
+
 create table produkty(
                          nazwa varchar(40) not null,
-                         numer_serii INT AUTO_INCREMENT,
+                         numer_serii int NOT NULL AUTO_INCREMENT,
                          cena_bazowa float not null,
                          liczba int not null,
                          dzialy_id_dzialu int not null,
                          dostawcy_id_dostawcy int not null,
                          cena_aktualna float not null,
                          constraint produkty_pk
-                             primary key (numer_serii)
+                             primary key (numer_serii),
+                         constraint liczbaP check (liczba>0)
 );
+
 create table promocja_produktu(
                                   produkty_numer_serii int not null,
                                   promocje_id_promocji int not null,
@@ -56,14 +62,16 @@ create table promocja_produktu(
                                                    promocje_id_promocji,
                                                    od,
                                                    do
-                                          )
+                                          ),
+                                  constraint date check (od<do)
 );
 create table promocje(
                          nazwa varchar(40),
                          id_promocji INT AUTO_INCREMENT,
-                         wysokosc_prom float not null default 0,
+                         wysokosc_prom float not null,
                          constraint promocje_pk
-                             primary key (id_promocji)
+                             primary key (id_promocji),
+                         constraint promka check (wysokosc_prom > 0.0 AND wysokosc_prom < 1.0)
 );
 create table sklepy(
                        adres varchar(40) not null,
@@ -80,7 +88,8 @@ create table sprzet_pracowniczy(
                         dzialy_id_dzialu int not null,
                         liczba int not null,
                         constraint sprzet_pracowniczy_pk
-                           primary key (numer_serii)
+                           primary key (numer_serii),
+                        constraint min_one check (liczba>0)
 );
 create table zespoly(
                         nazwa_zesp varchar(40) not null,
@@ -88,7 +97,7 @@ create table zespoly(
                         constraint zespoly_pk
                             primary key (id_zesp)
 );
-
+SET foreign_key_checks = 1;
 alter table dzialy
     add constraint dzialy_sklepy
         foreign key (sklepy_id_sklepu)
@@ -98,11 +107,6 @@ alter table pracownicy
     add constraint pracownicy_szef
         foreign key (id_szefa)
             references Pracownicy (id_pracownika)
-            ON UPDATE CASCADE ON DELETE CASCADE;
-alter table pracownicy
-    add constraint pracownicy_etaty
-        foreign key (etaty_nazwa_etatu)
-            references Etaty (nazwa_etatu)
             ON UPDATE CASCADE ON DELETE CASCADE;
 alter table pracownicy
     add constraint pracownicy_etaty
@@ -147,7 +151,83 @@ alter table sprzet_pracowniczy
         foreign key (dzialy_id_dzialu)
             references dzialy (id_dzialu);
 
-SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = 'skm' AND CONSTRAINT_NAME='PRIMARY' AND TABLE_NAME = 'etaty';
+DROP FUNCTION IF EXISTS checkPlaca;
+CREATE Function checkPlaca(etat varchar(40), placa float)
+RETURNS varchar(100)
+    BEGIN
+        DECLARE min float;
+        DECLARE max float;
+        SELECT placa_min, placa_max into min, max from etaty where nazwa_etatu = etat;
+        if(placa >= min AND placa<= max) THEN
+            RETURN '';
+        ELSE
+            RETURN 'Placa musi mieć wartość z przedziału odpowiedniego dla wybranego etatu!';
+        END IF;
+    end;
 
-SELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pracownicy'
+DROP PROCEDURE IF EXISTS promocja;
+CREATE PROCEDURE promocja(id_prom int,
+            nr_serii int)
+BEGIN
+    DECLARE aktualna float;
+    DECLARE procent float;
+    SELECT wysokosc_prom into procent from promocje where id_promocji = id_prom;
+    SELECT cena_bazowa*(1.0-procent) into aktualna from produkty where numer_serii = nr_serii;
+    SELECT aktualna;
+    UPDATE produkty SET cena_aktualna = aktualna where numer_serii = nr_serii;
+end;
+
+SET GLOBAL log_bin_trust_function_creators = 1;
+
+DROP FUNCTION IF EXISTS checkType;
+CREATE FUNCTION checkType (tabela varchar(40),
+ kolumna varchar(40),
+ wartosc varchar(40))
+ RETURNS varchar(100)
+ BEGIN
+    DECLARE tresc varchar (100);
+    DECLARE typ varchar(40);
+    DECLARE isNullable varchar(40);
+    SELECT DATA_TYPE, IS_NULLABLE into typ, isNullable From information_schema.COLUMNS
+    Where table_name = tabela AND COLUMN_NAME = kolumna;
+    if(isNullable = 'No' AND (wartosc is null OR wartosc = '')) THEN
+        SET tresc = CONCAT('Komórka ', kolumna, ' musi być wypełniona!');
+    ELSEIF (isNullable = 'Yes' AND (wartosc = '' OR wartosc is null)) THEN
+        SET tresc = '';
+    ELSE
+    CASE (typ)
+        WHEN 'float' THEN
+            if (wartosc REGEXP '^[0-9]+(\.[0-9][0-9]?)?$') THEN
+                SET tresc = '';
+            ELSE
+                SET tresc = CONCAT('Komórka ', kolumna, ' źle wypełniona! Poprawny format: 1234.56');
+            END IF;
+        WHEN 'int' THEN
+            if (wartosc REGEXP '^[1-9][0-9]*$') THEN
+                SET tresc = '';
+            ELSE
+                SET tresc = CONCAT('Komórka ', kolumna, ' źle wypełniona! Podaj dodatnią liczbę całkowitą.');
+            END IF;
+        WHEN 'date' THEN
+            if (wartosc REGEXP '^[12][[:digit:]]{3}-(0[1-9]|1[0-2])-([012][[:digit:]]|3[01])$') THEN
+                SET tresc = '';
+            ELSE
+                SET tresc = CONCAT('Komórka ', kolumna, ' źle wypełniona! Poprawny format: YYYY-MM-DD');
+            END IF;
+        ELSE
+            BEGIN
+                SET tresc = '';
+            end;
+        END CASE;
+    END if;
+    RETURN tresc;
+ end;
+
+DROP PROCEDURE IF EXISTS test;
+CREATE Procedure test()
+BEGIN
+    DECLARE aktualna float;
+    call promocja(0.2,1, aktualna);
+    select aktualna;
+end;
+call test();

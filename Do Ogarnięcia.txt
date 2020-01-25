@@ -1,8 +1,5 @@
 W trakcie:
 
-- usuwanie - Przy usuwaniu jeszcze dodać okienko potwierdzenia.
-
-
 Do zrobienia:
 
 - poprawienie wyglądu gui (okno edycji i dodawania dostosować, tabelkę w Entity też dostosować do rozmiaru wierszy).
@@ -27,3 +24,7 @@ Zrobione:
 
 
 - szukanie (jest pole i przycisk) zrobić listener na przycisk, ma pobrać to co wpisane w polu i trzeba zrobić funkcję, która przeszuka wszystkie kolumny zawierające daną sekwencję i wypisze wiersze, które zawierają kolumny z podaną sekwencją. | ulepszyc (bo np jak chcemy wszystkich pracowników danego sklepu, wpiszemy id sklepu równe 1, to wyskoczą wszystkie wartości płac zaczynające się od 1)
+
+
+- usuwanie - Przy usuwaniu jeszcze dodać okienko potwierdzenia. | ZROBIONE
+

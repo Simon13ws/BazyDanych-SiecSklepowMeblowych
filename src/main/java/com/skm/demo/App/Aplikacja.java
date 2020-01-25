@@ -1,5 +1,6 @@
 package com.skm.demo.App;
 
+import com.skm.demo.GUI.GUI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,9 +18,6 @@ public class Aplikacja implements CommandLineRunner {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     private static Connection con;
-    private String conStr = "jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
-    private String user = "user";
-    private String pass = "root";
 
     public static LinkedHashMap<Integer, String> getKeys(String tabela, Aplikacja a, String keyType, int pkOrTable) throws SQLException {
 
@@ -145,6 +143,19 @@ public class Aplikacja implements CommandLineRunner {
         return x;
     }
 
+    public static int selectColumnCount(String tabela, String column, String value) throws SQLException {
+        con = DriverManager.getConnection("jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC","user","root");
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM " + tabela + " Where " + column + " = " + value + " GROUP BY " + column);
+        ArrayList<String> values = new ArrayList<String>();
+        int i = 0;
+        if(rs.next())
+            i = rs.getInt(1);
+        con.close();
+        return i;
+    }
+
+
     public static ArrayList<String> selectColumn(String tabela, String column) throws SQLException {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC","user","root");
         Statement st = con.createStatement();
@@ -247,7 +258,6 @@ public class Aplikacja implements CommandLineRunner {
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery("SELECT " + drugiNr + " from promocja_produktu where " + nr + " = " + wartosc);
 
-        System.out.println("ok");
         JdbcTemplate jdbcTemplate2 = a.getJDBC();
         while(rs.next())
         {
@@ -334,7 +344,6 @@ public class Aplikacja implements CommandLineRunner {
         con.close();
     }
 
-
     public static void main(String[] args) {
         SpringApplicationBuilder builder = new SpringApplicationBuilder(Aplikacja.class);
 
@@ -344,9 +353,6 @@ public class Aplikacja implements CommandLineRunner {
 
     @Override
     public void run(String... strings) throws Exception {
-
         GUI g = new GUI(this);
-        g.Menu();
-
     }
 }
