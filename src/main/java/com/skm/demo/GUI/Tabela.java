@@ -270,18 +270,18 @@ public class Tabela extends GUI{
                             String tekst = "Jesteś pewien, że chcesz usunąć ten obiekt z bazy?";
                             if(tabela.equals("sklepy"))
                             {
-                                tekst += " Z bazy zostanie również usunięte: " + Aplikacja.selectColumnCount("dzialy","sklepy_id_sklepu", t.getValueAt(row, 4).toString()) + " działów (wraz z wszystkimi ich produktami) i ";
-                                tekst += Aplikacja.selectColumnCount("pracownicy","sklepy_id_sklepu", t.getValueAt(row, 4).toString()) + " pracowników. ";
+                                tekst += " Z bazy zostanie również usunięte: " + Aplikacja.selectColumnCount("dzialy","id_sklepu", t.getValueAt(row, 4).toString()) + " działów (wraz z wszystkimi ich produktami) i ";
+                                tekst += Aplikacja.selectColumnCount("pracownicy","id_sklepu", t.getValueAt(row, 4).toString()) + " pracowników. ";
                             }
                             else if(tabela.equals("dzialy")) {
-                                tekst += " Z bazy zostanie również usunięte: " + Aplikacja.selectColumnCount("produkty", "dzialy_id_dzialu", wartosci.get(1).toString()) + " produktów, ";
-                                tekst += Aplikacja.selectColumnCount("sprze_pracowniczy", "dzialy_id_dzialu", t.getValueAt(row, 1).toString()) + " sprzętów. ";
+                                tekst += " Z bazy zostanie również usunięte: " + Aplikacja.selectColumnCount("produkty", "id_dzialu", t.getValueAt(row, 1).toString()) + " produktów, ";
+                                tekst += Aplikacja.selectColumnCount("sprzet_pracowniczy", "id_dzialu", t.getValueAt(row, 1).toString()) + " sprzętów. ";
 
                             }
                             else if(tabela.equals("dostawcy"))
-                                tekst += " Z bazy zostanie również usunięte: " + Aplikacja.selectColumnCount("produkty","dostawcy_id_dostawcy", t.getValueAt(row, 2).toString()) + " produktów.";
+                                tekst += " Z bazy zostanie również usunięte: " + Aplikacja.selectColumnCount("produkty","id_dostawcy", t.getValueAt(row, 2).toString()) + " produktów.";
                             else if(tabela.equals("etaty"))
-                                tekst += " Z bazy zostanie również usunięte: " + Aplikacja.selectColumnCount("pracownicy","etaty_nazwa_etatu", t.getValueAt(row, 0).toString()) + " pracowników.";
+                                tekst += " Z bazy zostanie również usunięte: " + Aplikacja.selectColumnCount("pracownicy","etat", t.getValueAt(row, 0).toString()) + " pracowników.";
 
                             int dialogResult = JOptionPane.showConfirmDialog(null, tekst, "Potwierdzenie",JOptionPane.YES_NO_OPTION);
                             if(dialogResult==0) {

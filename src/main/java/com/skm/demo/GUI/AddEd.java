@@ -177,7 +177,7 @@ public class AddEd extends GUI {
                         }
                         String etat = new String();
                         for (int i=0; i<wartosci.size(); i++) {
-                            if(tabela.equals("pracownicy") && pola2.get(i).equals("etaty_nazwa_etatu"))
+                            if(tabela.equals("pracownicy") && pola2.get(i).equals("etat"))
                                 etat = wartosci.get(i);
 
                             String odp = Aplikacja.checkType(tabela, pola2.get(i), wartosci.get(i), GUI.a);

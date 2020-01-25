@@ -97,6 +97,16 @@ create table zespoly(
                         constraint zespoly_pk
                             primary key (id_zesp)
 );
+
+ALTER TABLE dzialy CHANGE nazwa nazwa varchar(30);
+ALTER TABLE dzialy CHANGE sklepy_id_sklepu id_sklepu int not null;
+ALTER TABLE pracownicy CHANGE sklepy_id_sklepu id_sklepu int not null;
+ALTER TABLE pracownicy CHANGE zespoly_id_zesp id_zespolu int;
+ALTER TABLE pracownicy CHANGE etaty_nazwa_etatu etat varchar(40) not null;
+ALTER TABLE produkty CHANGE dostawcy_id_dostawcy id_dostawcy int not null;
+ALTER TABLE produkty CHANGE dzialy_id_dzialu id_dzialu int not null;
+ALTER TABLE sprzet_pracowniczy CHANGE dzialy_id_dzialu id_dzialu int not null;
+
 SET foreign_key_checks = 1;
 alter table dzialy
     add constraint dzialy_sklepy
