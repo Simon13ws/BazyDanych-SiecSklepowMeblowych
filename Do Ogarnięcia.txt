@@ -1,2 +1,30 @@
-Usuwanie rekordów:
-jeśli usuniemy rekord jednej tabeli, który jest połączony z inną tabelą poprzez klucz obcy - usuwanie kaskadowe (dla promocji i etatu i sklepu) w innym wypadku usuwanie wartosci i zmiana na null
+W trakcie:
+
+Do zrobienia:
+
+- poprawienie wyglądu gui (okno edycji i dodawania dostosować, tabelkę w Entity też dostosować do rozmiaru wierszy).
+
+- testy
+
+- dodać elementy do tabel
+
+- uporządkować kod,
+
+Zrobione:
+
+- automatyczne generowanie ID -> SEKWENCJA  | ZROBIONE
+
+- podpowiadanie listy kluczy obcych przy wprowadzaniu/edytowaniu obiektow | Jest, jeszcze edycja | ZROBIONE
+
+- edycja - Jest wspólna funkcja dla dodawania i edycji (trzeba usunąć funkcję Addition i odpowiednio nazwać funkcję Edition, aby pasowałą do obu funkcji) - trzeba jeszcze dorobić zatwierdzanie edytowania i funkcję update. | Edycja jest
+
+- okno informacyjne dla sklepow (z marżą, liczbą pracowników) (tu dodać procedurę zliczającą 10% ceny wszystkich produktów w sklepie oraz może procedurę/funkcję zliczającą pracowników) | ZROBIONE
+
+- sprawdzanie poprawności formy wprowadzanych danych - sprawdzenie i komunikat gdy będą niepoprawne. regexy(?) | W dużej mierze zrobione - dorobić pojedyncze pola jak placa (by się zgadzała pomiędzy min a max), zmiana ceny aktualnej po dodaniu promocji na produkt
+
+
+- szukanie (jest pole i przycisk) zrobić listener na przycisk, ma pobrać to co wpisane w polu i trzeba zrobić funkcję, która przeszuka wszystkie kolumny zawierające daną sekwencję i wypisze wiersze, które zawierają kolumny z podaną sekwencją. | ulepszyc (bo np jak chcemy wszystkich pracowników danego sklepu, wpiszemy id sklepu równe 1, to wyskoczą wszystkie wartości płac zaczynające się od 1)
+
+
+- usuwanie - Przy usuwaniu jeszcze dodać okienko potwierdzenia. | ZROBIONE
+
