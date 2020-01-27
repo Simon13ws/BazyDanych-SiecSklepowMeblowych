@@ -1,6 +1,7 @@
 package com.skm.demo.GUI;
 
 import com.skm.demo.App.Aplikacja;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.UncategorizedSQLException;
 
 import javax.swing.*;
@@ -54,8 +55,6 @@ public class AddEd extends GUI {
         content.setLayout(layout);
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setSize(screenSize.width/2,screenSize.height/2);
-        frame.setLocationRelativeTo(null);
 
         ArrayList<String> pola = Aplikacja.getColumnNames(tabela);
 
@@ -65,11 +64,16 @@ public class AddEd extends GUI {
         LinkedHashMap<Integer, String> fkName = Aplikacja.getKeys(tabela,GUI.a,"foreign", 0);
 
         SpringLayout.Constraints constr = null;
+        int szerokosc = 15;
         for(int i = 0; i < pola.size(); i++) {
             areas.add(new JTextField(pola.get(i)));
+            areas.get(i).setColumns(pola.get(i).length());
             areas.get(i).setEditable(false);
             areas.get(i).setHorizontalAlignment(JTextField.CENTER);
-            areas.get(i).setColumns(pola.size());
+            if(areas.get(i).getColumns() < 8) {
+                areas.get(i).setColumns(8);
+            }
+            szerokosc+= (areas.get(i).getColumns() * 11) + 15 ;
             content.add(areas.get(i));
             try {
                 if (fkName.containsKey(i + 1)) {
@@ -123,9 +127,12 @@ public class AddEd extends GUI {
             layout.getConstraints(areas.get(i)).setY(ySpring);
             layout.putConstraint(SpringLayout.WEST, areas.get(i), xSpring,SpringLayout.EAST, areas.get(i-1));
             layout.putConstraint(SpringLayout.NORTH, fields.get(i),ySpring,SpringLayout.SOUTH,areas.get(i));
-            layout.putConstraint(SpringLayout.SOUTH, fields.get(i),25,SpringLayout.NORTH,fields.get(i));
+            //layout.putConstraint(SpringLayout.SOUTH, fields.get(i),25,SpringLayout.NORTH,fields.get(i));
+            layout.putConstraint(SpringLayout.EAST, fields.get(i),0,SpringLayout.EAST,areas.get(i));
             layout.putConstraint(SpringLayout.WEST, fields.get(i),xSpring,SpringLayout.EAST,areas.get(i-1));
         }
+
+        //layout.putConstraint(SpringLayout.EAST, content,  15, SpringLayout.EAST, areas.get(areas.size()-1));
 
         JButton zatwierdz = new JButton("Zatwierdz");
         JButton anuluj = new JButton("Anuluj");
@@ -196,12 +203,12 @@ public class AddEd extends GUI {
 
                         if(komunikaty.size() != 0) {
                             komunikaty.get(0).setForeground(Color.RED);
-                            layout.putConstraint(SpringLayout.WEST, komunikaty.get(0), xSpring, SpringLayout.EAST, zatwierdz);
-                            layout.putConstraint(SpringLayout.NORTH, komunikaty.get(0), xSpring, SpringLayout.SOUTH, fields.get(0));
+                            layout.putConstraint(SpringLayout.WEST, komunikaty.get(0), xSpring, SpringLayout.WEST, content);
+                            layout.putConstraint(SpringLayout.NORTH, komunikaty.get(0), xSpring, SpringLayout.SOUTH, anuluj);
                             content.add(komunikaty.get(0));
                             for (int i=1; i<komunikaty.size(); i++) {
                                 komunikaty.get(i).setForeground(Color.RED);
-                                layout.putConstraint(SpringLayout.WEST, komunikaty.get(i), xSpring, SpringLayout.EAST, zatwierdz);
+                                layout.putConstraint(SpringLayout.WEST, komunikaty.get(i), xSpring, SpringLayout.WEST, content);
                                 layout.putConstraint(SpringLayout.NORTH, komunikaty.get(i), xSpring, SpringLayout.SOUTH, komunikaty.get(i-1));
                                 content.add(komunikaty.get(i));
                             }
@@ -230,9 +237,7 @@ public class AddEd extends GUI {
                     {
                         String komunikat = new String();
                         switch(tabela) {
-                            case "pracownicy":
-                                komunikat = "Placa powinna mieć wartość z przedziału odpowiedniego dla wybranego etatu!";
-                                break;
+
                             case "promocje":
                                 komunikat = "Promocja powinna mieć wartość z przedziału 0.00-0.99!";
                                 break;
@@ -242,6 +247,25 @@ public class AddEd extends GUI {
                             case "etaty":
                                 komunikat = "Płaca maksymalna musi być większa od płacy minimalnej!";
                                 break;
+                        }
+                        JLabel naruszenie = new JLabel(komunikat);
+                        naruszenie.setForeground(Color.RED);
+                        layout.putConstraint(SpringLayout.WEST, naruszenie, xSpring, SpringLayout.WEST, content);
+                        layout.putConstraint(SpringLayout.NORTH, naruszenie, xSpring, SpringLayout.SOUTH, anuluj);
+                        content.add(naruszenie);
+                        frame.setVisible(true);
+                    }
+                    catch(DuplicateKeyException exc)
+                    {
+                        String komunikat = new String();
+                        switch(tabela) {
+                            case "etaty":
+                                komunikat = "Istnieje już etat o takiej nazwie!";
+                                break;
+                            case "promocja_produktu":
+                                komunikat = "Istnieje już promocja na tym produkcie w tym okresie!";
+                                break;
+
                         }
                         JLabel naruszenie = new JLabel(komunikat);
                         naruszenie.setForeground(Color.RED);
@@ -268,6 +292,8 @@ public class AddEd extends GUI {
                     }
                 }
         );
+        frame.setSize( szerokosc ,screenSize.height/2);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 

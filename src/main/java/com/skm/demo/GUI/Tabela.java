@@ -19,6 +19,7 @@ public class Tabela extends GUI{
     private JScrollPane jsp;
     private String nazwa;
     private String tabela;
+    private int tablewidth;
     int inc;
 
     public Tabela(){
@@ -46,7 +47,6 @@ public class Tabela extends GUI{
         Container content = entityFrame.getContentPane();
         content.setLayout(layout);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
         entityFrame.setSize(screenSize.width / 2, screenSize.height / 2);
         entityFrame.setLocationRelativeTo(null);
 
@@ -76,6 +76,8 @@ public class Tabela extends GUI{
         });
         jsp = new JScrollPane(t);
         content.add(jsp);
+
+
 
         JTextField szukajF = new JTextField(20);
         szukajF.setEditable(true);
@@ -156,7 +158,6 @@ public class Tabela extends GUI{
                 }
                 i++;
             }
-
             content.remove(jsp);
             t = new JTable(new DefaultTableModel(wiersze2, nazwy){
                 @Override
@@ -281,9 +282,8 @@ public class Tabela extends GUI{
                             else if(tabela.equals("dostawcy"))
                                 tekst += " Z bazy zostanie również usunięte: " + Aplikacja.selectColumnCount("produkty","id_dostawcy", t.getValueAt(row, 2).toString()) + " produktów.";
                             else if(tabela.equals("etaty"))
-                                tekst += " Z bazy zostanie również usunięte: " + Aplikacja.selectColumnCount("pracownicy","etat", t.getValueAt(row, 0).toString()) + " pracowników.";
-
-                            int dialogResult = JOptionPane.showConfirmDialog(null, tekst, "Potwierdzenie",JOptionPane.YES_NO_OPTION);
+                                tekst += " Z bazy zostanie również usunięte: " + Aplikacja.selectColumnCount("pracownicy","etat", "'"+t.getValueAt(row, 0).toString()+"'") + " pracowników.";
+                            int dialogResult = JOptionPane.showConfirmDialog(content, tekst, "Potwierdzenie",JOptionPane.YES_NO_OPTION);
                             if(dialogResult==0) {
                                 Aplikacja.deleteRow(tabela, wartosci, a);
 
@@ -299,6 +299,7 @@ public class Tabela extends GUI{
                                     i++;
                                 }
                                 content.remove(jsp);
+                                content.revalidate();
                                 t = new JTable(new DefaultTableModel(wiersze2, nazwy) {
                                     @Override
                                     public boolean isCellEditable(int row, int column) {

@@ -88,9 +88,9 @@ public class Aplikacja implements CommandLineRunner {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC","user","root");
         String sql = "SELECT SUM(p.cena_aktualna)*0.1*p.liczba as Marża " +
                         "from dzialy d " +
-                        "INNER JOIN sklepy s on s.id_sklepu=d.sklepy_id_sklepu " +
-                        "INNER JOIN produkty p on p.dzialy_id_dzialu=d.id_dzialu " +
-                        "where id_sklepu = " + id_sklepu;
+                        "INNER JOIN sklepy s on s.id_sklepu=d.id_sklepu " +
+                        "INNER JOIN produkty p on p.id_dzialu=d.id_dzialu " +
+                        "where s.id_sklepu = " + id_sklepu;
 
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery(sql);
@@ -104,8 +104,8 @@ public class Aplikacja implements CommandLineRunner {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/SKM?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC","user","root");
         String sql = "SELECT COUNT(*) as LiczbaPracownikow " +
                         "from pracownicy p " +
-                        "INNER JOIN sklepy s on s.id_sklepu=p.sklepy_id_sklepu " +
-                        "where id_sklepu = " + id_sklepu;
+                        "INNER JOIN sklepy s on s.id_sklepu=p.id_sklepu " +
+                        "where s.id_sklepu = " + id_sklepu;
 
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery(sql);
@@ -319,8 +319,10 @@ public class Aplikacja implements CommandLineRunner {
         sql += ") VALUES (";
         for(int i=0; i<kolumny.size(); i++)
         {
-            if(kolumny.get(i) != null)
-                sql += "'" + wartosci.get(i)+"'";
+                if(kolumny.get(i).contains("id") || kolumny.get(i).contains("numer"))
+                    sql += wartosci.get(i);
+                else
+                    sql += "'" + wartosci.get(i) + "'";
             if(i<kolumny.size()-1)
                 sql += ", ";
             else
